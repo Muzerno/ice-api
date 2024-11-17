@@ -24,6 +24,7 @@ export class TransportationController {
         success: true,
         data: cars
       }
+
     } catch (error) {
       throw new Error(error.message);
     }

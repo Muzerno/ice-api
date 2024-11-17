@@ -16,6 +16,7 @@ export class ProductService {
       await this.productRepository.createQueryBuilder('product')
         .insert().into(Product).values({
           product_name: body.product_name,
+          product_number: body.product_number,
           price: body.price,
           stock: body.stock,
           create_at: new Date(),
