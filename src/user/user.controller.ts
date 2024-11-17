@@ -1,34 +1,76 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put } from '@nestjs/common';
+
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { IUpdateUser, ReqCreateUser } from './validator/validator';
+import { Response } from 'express';
+import { UUID } from 'crypto';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
 
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  async findAll() {
+    const users = await this.userService.findAll();
+    return {
+      success: true,
+      data: users
+    }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  @Get('/:uuid')
+  async findOne(@Param() uuid: UUID) {
+    try {
+      const user = await this.userService.findOne(uuid);
+      return {
+        success: true, data: user
+      }
+    } catch (error) {
+      throw new Error(error.message)
+    }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  @Post()
+  async createUser(@Body() body: ReqCreateUser) {
+    try {
+      await this.userService.createUser(body)
+      return {
+        success: true, message: "Create User Success"
+      }
+    } catch (error) {
+      return {
+        success: false, message: "Create User Failed", stack: error.stack
+      }
+    }
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+
+  @Put('/:uuid')
+  async updateUser(@Param('uuid') uuid, @Body() body: IUpdateUser) {
+    try {
+      await this.userService.updateUser(uuid, body)
+      return {
+        success: true, message: "Update User Success"
+      }
+    } catch (error) {
+      return {
+        success: false, message: "Update User Failed", stack: error.stack
+      }
+    }
+  }
+
+  @Delete('/:uuid')
+  async deleteUser(@Param('uuid') uuid) {
+    try {
+      await this.userService.deleteUser(uuid)
+      return {
+        success: true, message: "Delete User Success"
+      }
+    } catch (error) {
+      return {
+        success: false, message: "Delete User Failed", stack: error.stack
+      }
+    }
   }
 }

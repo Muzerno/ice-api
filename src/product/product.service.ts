@@ -1,26 +1,72 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Product } from 'src/entity/product.entity';
+import { Repository } from 'typeorm';
+import { ICreateProduct, IUpdateProduct } from './validator/validator';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class ProductService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  constructor(
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>
+  ) { }
+  async create(body: ICreateProduct) {
+    try {
+      await this.productRepository.createQueryBuilder('product')
+        .insert().into(Product).values({
+          product_name: body.product_name,
+          price: body.price,
+          stock: body.stock,
+          create_at: new Date(),
+
+        }).execute()
+    } catch (error) {
+      throw new Error(error.message)
+    }
   }
 
-  findAll() {
-    return `This action returns all product`;
+  async findAll() {
+    try {
+      const product = await this.productRepository.find({ where: { status: "active" } })
+      return product
+    } catch (error) {
+      throw new Error(error.message)
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findOne(uuid: UUID) {
+    try {
+      const product = await this.productRepository.findOne({ where: { uuid: uuid } })
+      return product
+    } catch (error) {
+
+    }
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(uuid: UUID, body: IUpdateProduct) {
+    try {
+      await this.productRepository.createQueryBuilder('product')
+        .update()
+        .set({
+          product_name: body.product_name,
+          price: body.price,
+          stock: body.stock
+        }).execute()
+    } catch (error) {
+      throw new Error(error.message)
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(uuid: UUID) {
+    try {
+      await this.productRepository.createQueryBuilder('product')
+        .update()
+        .set({
+          status: "archived",
+        }).execute()
+    } catch (error) {
+      throw new Error(error.message)
+    }
   }
 }

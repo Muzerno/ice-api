@@ -6,6 +6,8 @@ import { UserModule } from './user/user.module';
 import { CustomerModule } from './customer/customer.module';
 import { ProductModule } from './product/product.module';
 import { ConfigModule } from '@nestjs/config';
+import { TransportationModule } from './transportation/transportation.module';
+import { CredentialModule } from './credential/credential.module';
 import databaseConfig from './config/database.config';
 
 
@@ -16,6 +18,8 @@ import databaseConfig from './config/database.config';
     UserModule,
     CustomerModule,
     ProductModule,
+    TransportationModule,
+    CredentialModule,
   ],
   controllers: [AppController],
   providers: [AppService],

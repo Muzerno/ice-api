@@ -1,34 +1,35 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { IUpdateProduct, ReqCreateProduct } from './validator/validator';
+import { UUID } from 'crypto';
+
 
 @Controller('product')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(private readonly productService: ProductService) { }
 
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  async create(@Body() createProductDto: ReqCreateProduct) {
+    return await this.productService.create(createProductDto);
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  async findAll() {
+    return await this.productService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  @Get(':uuid')
+  async findOne(@Param('uuid') uuid: UUID) {
+    return await this.productService.findOne(uuid);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @Patch(':uuid')
+  async update(@Param('uuid') uuid: UUID, @Body() body: IUpdateProduct) {
+    return await this.productService.update(uuid, body);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+  @Delete(':uuid')
+  async remove(@Param('uuid') uuid: UUID) {
+    return await this.productService.remove(uuid);
   }
 }
