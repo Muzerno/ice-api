@@ -7,8 +7,6 @@ export class ICreateCar {
 }
 
 export class ICreateLine {
-    number: string
-    car_number: string
-    customer_id: number
+    customer_uuid: UUID
     car_uuid?: UUID
 }

@@ -4,6 +4,7 @@ import { UserService } from './user.service';
 import { IUpdateUser, ReqCreateUser } from './validator/validator';
 import { Response } from 'express';
 import { UUID } from 'crypto';
+import { User } from 'src/entity/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -71,6 +72,17 @@ export class UserController {
       return {
         success: false, message: "Delete User Failed", stack: error.stack
       }
+    }
+  }
+
+  @Get('/deliver')
+  async findDeliverUsers() {
+    try {
+      const users = await this.userService.findDeliverUsers();
+      console.log("user", users)
+      return { success: true, data: users };
+    } catch (error) {
+      return { success: false, message: "Failed to find deliver users", stack: error.stack };
     }
   }
 }

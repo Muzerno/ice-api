@@ -6,7 +6,10 @@ import { User } from "./user.entity";
 export class Role extends FactoryTemplate {
 
     @Column()
-    role_name:string
+    role_name: string
+
+    @Column()
+    role_key: string
 
     @OneToMany(type => User, user => user.role)
     users: User[]

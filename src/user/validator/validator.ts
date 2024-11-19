@@ -1,8 +1,11 @@
+import { UUID } from "crypto";
+
 export class ReqCreateUser {
     username: string;
     password?: string;
     telephone: string;
     name: string
+    role_uuid: UUID
 }
 
 export interface ICreateUser {
@@ -10,6 +13,7 @@ export interface ICreateUser {
     password?: string;
     telephone: string;
     name: string
+    role_uuid: UUID
 }
 
 export interface IUpdateUser {
@@ -17,4 +21,5 @@ export interface IUpdateUser {
     password: string;
     telephone: string;
     name: string
+    role_uuid: UUID
 }

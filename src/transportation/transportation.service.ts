@@ -20,7 +20,7 @@ export class TransportationService {
         try {
             await this.transportationRepository.createQueryBuilder('transportation_car').insert().values({
                 car_number: body.car_number,
-                key_api: body.key_api,
+                key_api: body?.key_api,
                 user_uid: body.user_uid
             }).execute();
         } catch (error) {
@@ -30,7 +30,7 @@ export class TransportationService {
 
     async getAllCar() {
         try {
-            const cars = await this.transportationRepository.find({ where: { status: "active" } });
+            const cars = await this.transportationRepository.find({ where: { status: "active" }, relations: ["users"] });
             return cars
         } catch (error) {
             throw new Error(error.message)
@@ -57,8 +57,7 @@ export class TransportationService {
 
     async deleteCar(uuid: UUID) {
         try {
-            await this.transportationRepository.createQueryBuilder('transportation_car').update()
-                .set({ status: "deleted" }).where({ uuid: uuid }).execute();
+            await this.transportationRepository.createQueryBuilder('transportation_car').delete().where({ uuid: uuid }).execute();
         } catch (error) {
             throw new Error(error.message)
         }
@@ -68,8 +67,8 @@ export class TransportationService {
         try {
             await this.transportation_lineRepository.createQueryBuilder('transportation_line').insert().values(
                 {
-                    car_number: body.car_number,
-                    customer_id: body.customer_id
+                    car_uuid: body.car_uuid,
+                    customer_uid: body.customer_uuid
                 }
             ).execute();
         } catch (error) {
@@ -79,7 +78,7 @@ export class TransportationService {
 
     async getAllLines() {
         try {
-            const lines = await this.transportation_lineRepository.find();
+            const lines = await this.transportation_lineRepository.find({ relations: ["transportation_car", "customer"] });
             return lines
         } catch (error) {
             throw new Error(error.message)

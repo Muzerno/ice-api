@@ -15,7 +15,7 @@ export class CredentialService {
         if (!user) {
             return null;
         }
-        const isValid = await this.usersService.validatePassword(user, password);
+        const isValid = await this.usersService.validatePassword(user.username, password);
         if (!isValid) {
             return null;
         }
@@ -23,9 +23,10 @@ export class CredentialService {
     }
 
     async login(user: any) {
-        const payload = { username: user.username, sub: user.id };
-        return {
-            access_token: this.jwtService.sign(payload),
-        };
+        const payload = { user: user };
+        return payload
+        // return {
+        //     access_token: await this.jwtService.signAsync(payload),
+        // };
     }
 }

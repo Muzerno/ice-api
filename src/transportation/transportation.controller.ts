@@ -53,7 +53,7 @@ export class TransportationController {
     }
   }
 
-  @Delete('cars/:uuid')
+  @Delete('car/:uuid')
   async deleteCar(@Param('uuid') uuid: UUID) {
     try {
       await this.transportationService.deleteCar(uuid);

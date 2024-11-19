@@ -1,7 +1,7 @@
-import { Controller, Post, Body, Req, Res } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import { CredentialService } from './credential.service';
-import { JwtService } from '@nestjs/jwt';
 import { ICreateCredential } from './validator/validator';
+import { Response } from 'express'
 
 @Controller('auth')
 export class CredentialController {
@@ -10,15 +10,18 @@ export class CredentialController {
   ) { }
 
   @Post('login')
-  async login(@Body() credentials: ICreateCredential) {
+  async login(@Body() credentials: ICreateCredential, @Res() res: Response) {
     const user = await this.authService.validateUser(
       credentials.username,
       credentials.password,
     );
     if (!user) {
-      return { error: 'Invalid credentials' };
+      res.status(HttpStatus.NO_CONTENT)
+      res.json({ success: false, error: 'Invalid credentials' });
+      return
     }
-    const token = await this.authService.login(user);
-    return token;
+    const payload = await this.authService.login(user);
+    res.status(HttpStatus.OK);
+    res.json({ success: true, payload: payload });
   }
 }

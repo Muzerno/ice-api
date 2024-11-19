@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ICreateUser, IUpdateUser } from './validator/validator';
 import { User } from 'src/entity/user.entity';
 import { Repository } from 'typeorm';
@@ -8,7 +8,7 @@ import { UUID } from 'crypto';
 
 @Injectable()
 export class UserService {
-
+  private logger = new Logger('UserService');
   constructor(
     @InjectRepository(User)
     private UserRepository: Repository<User>
@@ -24,6 +24,7 @@ export class UserService {
           telephone: body.telephone,
           name: body.name,
           create_at: new Date(),
+          role: { uuid: body.role_uuid }
         })
         .execute()
       return;
@@ -34,7 +35,7 @@ export class UserService {
 
   async findAll() {
     try {
-      return await this.UserRepository.find({ where: { status: "active" } });
+      return await this.UserRepository.find({ where: { status: "active" }, relations: ["role"] });
     } catch (error) {
       throw new Error(error.message)
     }
@@ -50,6 +51,7 @@ export class UserService {
           telephone: body.telephone,
           name: body.name,
           update_at: new Date(),
+          role: { uuid: body.role_uuid }
         })
         .where({
           uuid: uuid
@@ -92,8 +94,8 @@ export class UserService {
 
   async getUserByUsername(username: string) {
     try {
-      const user = await this.UserRepository.findOne({ where: { username: username } })
-      return user.username
+      const user = await this.UserRepository.findOne({ where: { username: username, status: "active" }, relations: ["role"] })
+      return user
     } catch (error) {
       throw new Error(error.message)
     }
@@ -106,6 +108,19 @@ export class UserService {
       return user;
     } catch (error) {
       throw new Error(error.message)
+    }
+  }
+
+  async findDeliverUsers() {
+    try {
+      const res = await this.UserRepository.find({
+        where: { role: { role_key: "deliver" } },
+        relations: ["role"],
+      });
+      this.logger.log("res", res)
+      return res
+    } catch (error) {
+      throw new Error(error.message);
     }
   }
 }

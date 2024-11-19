@@ -16,6 +16,7 @@ export class CustomerService {
     try {
       await this.customerRepository.createQueryBuilder('customer').insert().values({
         name: body.name,
+        telephone: body.telephone,
         latitude: body.latitude,
         longitude: body.longitude,
         address: body.address,
