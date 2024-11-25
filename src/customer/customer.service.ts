@@ -20,7 +20,6 @@ export class CustomerService {
         latitude: body.latitude,
         longitude: body.longitude,
         address: body.address,
-        create_at: new Date(),
       }).execute()
     } catch (error) {
       throw new Error(error.message)
@@ -29,33 +28,33 @@ export class CustomerService {
 
   async findAll() {
     try {
-      const customer = await this.customerRepository.find({ where: { status: "active" } })
+      const customer = await this.customerRepository.find()
       return customer
     } catch (error) {
       throw new Error(error.message)
     }
   }
 
-  async findOne(uuid: UUID) {
+  async findOne(id: number) {
     try {
-      const customer = await this.customerRepository.findOne({ where: { uuid: uuid, status: "active" } })
+      const customer = await this.customerRepository.findOne({ where: { id: id } })
       return customer
     } catch (error) {
       throw new Error(error.message)
     }
   }
 
-  async update(uuid: UUID, body: ICreateCustomer) {
+  async update(id: number, body: ICreateCustomer) {
     try {
       await this.customerRepository.createQueryBuilder('customer').update()
         .set({ name: body.name, latitude: body.latitude, longitude: body.longitude, address: body.address })
-        .where({ uuid: uuid }).execute()
+        .where({ id: id }).execute()
     } catch (error) {
       throw new Error(error.message)
     }
   }
 
-  async remove(uuid: UUID) {
-    await this.customerRepository.createQueryBuilder('customer').update().set({ status: "archived" }).where({ uuid: uuid }).execute()
+  async remove(id: number) {
+    await this.customerRepository.delete(id)
   }
 }

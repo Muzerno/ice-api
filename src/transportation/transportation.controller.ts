@@ -30,10 +30,10 @@ export class TransportationController {
     }
   }
 
-  @Get('car/:uuid')
-  async getCar(@Param('uuid') uuid: UUID) {
+  @Get('car/:id')
+  async getCar(@Param('id') id: number) {
     try {
-      const car = await this.transportationService.getCar(uuid);
+      const car = await this.transportationService.getCar(id);
       return {
         success: true,
         data: car
@@ -43,20 +43,20 @@ export class TransportationController {
     }
   }
 
-  @Put('car/:uuid')
-  async updateCar(@Param('uuid') uuid: UUID, @Body() body: any) {
+  @Put('car/:id')
+  async updateCar(@Param('id') id: number, @Body() body: any) {
     try {
-      await this.transportationService.updateCar(uuid, body);
+      await this.transportationService.updateCar(id, body);
       return { message: 'Car updated successfully' };
     } catch (error) {
       throw new Error(error.message);
     }
   }
 
-  @Delete('car/:uuid')
-  async deleteCar(@Param('uuid') uuid: UUID) {
+  @Delete('car/:id')
+  async deleteCar(@Param('id') id: number) {
     try {
-      await this.transportationService.deleteCar(uuid);
+      await this.transportationService.deleteCar(id);
       return { message: 'Car deleted successfully' };
     } catch (error) {
       throw new Error(error.message);
@@ -73,18 +73,18 @@ export class TransportationController {
     return this.transportationService.getAllLines();
   }
 
-  @Get(':uuid')
-  async getLine(@Param('uuid') uuid: UUID) {
-    return this.transportationService.getLine(uuid);
+  @Get(':id')
+  async getLine(@Param('id') id: number) {
+    return this.transportationService.getLine(id);
   }
 
-  @Put(':uuid')
-  async updateLine(@Param('uuid') uuid: UUID, @Body() body: any) {
-    return this.transportationService.updateLine(uuid, body);
+  @Put(':id')
+  async updateLine(@Param('id') id: number, @Body() body: any) {
+    return this.transportationService.updateLine(id, body);
   }
 
-  @Delete(':uuid')
-  async deleteLine(@Param('uuid') uuid: UUID) {
-    return this.transportationService.deleteLine(uuid);
+  @Delete(':id')
+  async deleteLine(@Param('id') id: number) {
+    return this.transportationService.deleteLine(id);
   }
 }

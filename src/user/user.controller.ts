@@ -2,9 +2,7 @@ import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put } from '@ne
 
 import { UserService } from './user.service';
 import { IUpdateUser, ReqCreateUser } from './validator/validator';
-import { Response } from 'express';
-import { UUID } from 'crypto';
-import { User } from 'src/entity/user.entity';
+
 
 @Controller('user')
 export class UserController {
@@ -20,10 +18,10 @@ export class UserController {
     }
   }
 
-  @Get('/:uuid')
-  async findOne(@Param() uuid: UUID) {
+  @Get('/:id')
+  async findOne(@Param() id: number) {
     try {
-      const user = await this.userService.findOne(uuid);
+      const user = await this.userService.findOne(id);
       return {
         success: true, data: user
       }
@@ -47,10 +45,10 @@ export class UserController {
   }
 
 
-  @Put('/:uuid')
-  async updateUser(@Param('uuid') uuid, @Body() body: IUpdateUser) {
+  @Put('/:id')
+  async updateUser(@Param('id') id, @Body() body: IUpdateUser) {
     try {
-      await this.userService.updateUser(uuid, body)
+      await this.userService.updateUser(id, body)
       return {
         success: true, message: "Update User Success"
       }
@@ -61,10 +59,10 @@ export class UserController {
     }
   }
 
-  @Delete('/:uuid')
-  async deleteUser(@Param('uuid') uuid) {
+  @Delete('/:id')
+  async deleteUser(@Param('id') id) {
     try {
-      await this.userService.deleteUser(uuid)
+      await this.userService.deleteUser(id)
       return {
         success: true, message: "Delete User Success"
       }

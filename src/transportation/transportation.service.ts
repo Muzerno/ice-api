@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transportation_Car } from 'src/entity/transport_car.entity';
-import { Transportation_line } from 'src/entity/transportation.entity';
+import { Line } from 'src/entity/transportation.entity';
 import { Repository } from 'typeorm';
 import { ICreateCar, ICreateLine } from './validator/validator';
 import { UUID } from 'crypto';
@@ -12,8 +12,8 @@ export class TransportationService {
         @InjectRepository(Transportation_Car)
         private transportationRepository: Repository<Transportation_Car>,
 
-        @InjectRepository(Transportation_line)
-        private transportation_lineRepository: Repository<Transportation_line>,
+        @InjectRepository(Line)
+        private LineRepository: Repository<Line>,
     ) { }
 
     async createCar(body: ICreateCar) {
@@ -21,7 +21,7 @@ export class TransportationService {
             await this.transportationRepository.createQueryBuilder('transportation_car').insert().values({
                 car_number: body.car_number,
                 key_api: body?.key_api,
-                user_uid: body.user_uid
+                user_id: body.user_id
             }).execute();
         } catch (error) {
             throw new Error(error.message)
@@ -30,34 +30,34 @@ export class TransportationService {
 
     async getAllCar() {
         try {
-            const cars = await this.transportationRepository.find({ where: { status: "active" }, relations: ["users"] });
+            const cars = await this.transportationRepository.find({ relations: ["users"] });
             return cars
         } catch (error) {
             throw new Error(error.message)
         }
     }
 
-    async getCar(uuid: UUID) {
+    async getCar(id: number) {
         try {
-            const car = await this.transportationRepository.findOne({ where: { status: "active", uuid: uuid } });
+            const car = await this.transportationRepository.findOne({ where: { id: id } });
             return car
         } catch (error) {
             throw new Error(error.message)
         }
     }
 
-    async updateCar(uuid: UUID, body) {
+    async updateCar(id: number, body) {
         try {
             await this.transportationRepository.createQueryBuilder('transportation_car').update()
-                .set({ car_number: body.car_number, key_api: body.key_api }).where({ uuid: uuid }).execute();
+                .set({ car_number: body.car_number, key_api: body.key_api }).where({ id: id }).execute();
         } catch (error) {
             throw new Error(error.message)
         }
     }
 
-    async deleteCar(uuid: UUID) {
+    async deleteCar(id: number) {
         try {
-            await this.transportationRepository.createQueryBuilder('transportation_car').delete().where({ uuid: uuid }).execute();
+            await this.transportationRepository.createQueryBuilder('transportation_car').delete().where({ id: id }).execute();
         } catch (error) {
             throw new Error(error.message)
         }
@@ -65,10 +65,10 @@ export class TransportationService {
 
     async createLine(body: ICreateLine) {
         try {
-            await this.transportation_lineRepository.createQueryBuilder('transportation_line').insert().values(
+            await this.LineRepository.createQueryBuilder('Line').insert().values(
                 {
-                    car_uuid: body.car_uuid,
-                    customer_uid: body.customer_uuid
+                    car_id: body.car_id,
+                    customer_id: body.customer_id
                 }
             ).execute();
         } catch (error) {
@@ -78,36 +78,37 @@ export class TransportationService {
 
     async getAllLines() {
         try {
-            const lines = await this.transportation_lineRepository.find({ relations: ["transportation_car", "customer"] });
+            const lines = await this.LineRepository.find({ relations: ["transportation_car", "customer"] });
             return lines
         } catch (error) {
             throw new Error(error.message)
         }
     }
 
-    async getLine(uuid: UUID) {
+
+    async getLine(id: number) {
         try {
-            const line = await this.transportation_lineRepository.findOne({ where: { uuid: uuid } });
+            const line = await this.LineRepository.findOne({ where: { id: id } });
             return line
         } catch (error) {
             throw new Error(error.message)
         }
     }
 
-    async updateLine(uuid: UUID, body: any) {
+    async updateLine(id: number, body: any) {
         try {
-            await this.transportation_lineRepository.createQueryBuilder('transportation_line').update()
+            await this.LineRepository.createQueryBuilder('Line').update()
                 .set({ // ...
-                }).where({ uuid: uuid }).execute();
+                }).where({ id: id }).execute();
         } catch (error) {
             throw new Error(error.message)
         }
     }
 
-    async deleteLine(uuid: UUID) {
+    async deleteLine(id: number) {
         try {
-            await this.transportation_lineRepository.createQueryBuilder('transportation_line').delete()
-                .where({ uuid: uuid }).execute();
+            await this.LineRepository.createQueryBuilder('Line').delete()
+                .where({ id: id }).execute();
         } catch (error) {
             throw new Error(error.message)
         }

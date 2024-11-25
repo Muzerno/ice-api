@@ -1,18 +1,22 @@
-import { Column, Entity } from "typeorm";
+import { Column, Entity, ManyToOne, OneToOne } from "typeorm";
 import { FactoryTemplate } from "./factory.template";
-@Entity()
+import { Loading } from "./loading.entity";
+import { ManufactureDetail } from "./manufacture_detail.entity";
+@Entity({ name: "ice" })
 export class Product extends FactoryTemplate {
 
     @Column()
-    product_number:string
+    name: string
 
     @Column()
-    product_name:string
+    price: number
 
     @Column()
-    price:number
+    amount: number
 
-    @Column()
-    stock:number
+    @ManyToOne(() => Loading, loading => loading.products)
+    loading: Loading
 
+    @OneToOne(() => ManufactureDetail, manufactureDetail => manufactureDetail.products)
+    manufacture_detail: ManufactureDetail
 }

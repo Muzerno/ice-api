@@ -3,27 +3,6 @@ import { Column, Entity, PrimaryGeneratedColumn, Timestamp } from "typeorm";
 
 @Entity()
 export class FactoryTemplate {
-    @PrimaryGeneratedColumn("uuid")
-    uuid: UUID
-
-    @Column({ type: "timestamp", nullable: true })
-    create_at: Timestamp
-
-    @Column({ type: "timestamp", nullable: true })
-    update_at: Timestamp
-
-    @Column({ type: "enum", enum: ["active", "archived", "pending"], default: "active" })
-    status: string
-
-    @Column({ nullable: true })
-    create_by: string
-
-    @Column({ nullable: true })
-    update_by: string
-
-    @Column({ nullable: true })
-    archive_by: string
-
-    @Column({ type: "timestamp", nullable: true })
-    archive_at: Timestamp
+    @PrimaryGeneratedColumn("increment")
+    id: number
 }

@@ -6,20 +6,26 @@ import { Transportation_Car } from "./transport_car.entity";
 @Entity()
 export class User extends FactoryTemplate {
 
-   @Column()
+   @Column({ length: 50 })
    username: string
 
-   @Column()
+   @Column({})
    password: string
 
-   @Column()
+   @Column({ length: 10 })
    telephone: string
 
    @Column()
-   name: string
+   address: string
+
+   @Column()
+   firstname: string
+
+   @Column()
+   lastname: string
 
    @ManyToOne(() => Role, role => role.users)
-   @JoinColumn({ name: "role_uuid" })
+   @JoinColumn({ name: "role_id" })
    role: Role
 
    @OneToOne(() => Transportation_Car, transportation_car => transportation_car.users)

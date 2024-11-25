@@ -4,26 +4,23 @@ import { UUID } from "crypto";
 import { Transportation_Car } from "./transport_car.entity";
 import { Customer } from "./customer.entity";
 
-@Entity()
-export class Transportation_line extends FactoryTemplate {
-
-    @Column({ nullable: true })
-    car_number: string
+@Entity({ name: "line" })
+export class Line extends FactoryTemplate {
 
     @Column()
-    customer_uid: UUID
+    customer_id: number
 
     @Generated("increment")
     number: number
 
     @Column({ nullable: true })
-    car_uuid: UUID
+    car_id: number
 
-    @ManyToOne(() => Transportation_Car, transportation_car => transportation_car.transportation_lines)
-    @JoinColumn({ name: "car_uuid" })
+    @ManyToOne(() => Transportation_Car, transportation_car => transportation_car.Lines)
+    @JoinColumn({ name: "car_id" })
     transportation_car: Transportation_Car
 
-    @ManyToOne(() => Customer, customer => customer.transportation_lines)
-    @JoinColumn({ name: "customer_uid" })
+    @ManyToOne(() => Customer, customer => customer.Lines)
+    @JoinColumn({ name: "customer_id" })
     customer: Customer
 }

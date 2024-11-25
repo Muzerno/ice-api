@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Put, Delete, Param } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { ICreateRole } from './validator/validator';
-import { UUID } from 'uuid';
+
 
 @Controller('roles')
 export class RoleController {
@@ -17,18 +17,18 @@ export class RoleController {
     return this.roleService.getAllRoles();
   }
 
-  @Get(':uuid')
-  async getRoleByUUID(@Param('uuid') uuid: UUID) {
-    return this.roleService.getRoleByUUID(uuid);
+  @Get(':id')
+  async getRoleByUUID(@Param('id') id: number) {
+    return this.roleService.getRoleByUUID(id);
   }
 
-  @Put(':uuid')
-  async updateRole(@Param('uuid') uuid: UUID, @Body() body: ICreateRole) {
-    return this.roleService.updateRole(uuid, body);
+  @Put(':id')
+  async updateRole(@Param('id') id: number, @Body() body: ICreateRole) {
+    return this.roleService.updateRole(id, body);
   }
 
-  @Delete(':uuid')
-  async deleteRole(@Param('uuid') uuid: UUID) {
-    return this.roleService.deleteRole(uuid);
+  @Delete(':id')
+  async deleteRole(@Param('id') id: number) {
+    return this.roleService.deleteRole(id);
   }
 }

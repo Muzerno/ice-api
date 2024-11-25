@@ -18,18 +18,18 @@ export class ProductController {
     return await this.productService.findAll();
   }
 
-  @Get(':uuid')
-  async findOne(@Param('uuid') uuid: UUID) {
-    return await this.productService.findOne(uuid);
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    return await this.productService.findOne(id);
   }
 
-  @Patch(':uuid')
-  async update(@Param('uuid') uuid: UUID, @Body() body: IUpdateProduct) {
-    return await this.productService.update(uuid, body);
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() body: IUpdateProduct) {
+    return await this.productService.update(id, body);
   }
 
-  @Delete(':uuid')
-  async remove(@Param('uuid') uuid: UUID) {
-    return await this.productService.remove(uuid);
+  @Delete(':id')
+  async remove(@Param('id') id: number) {
+    return await this.productService.remove(id);
   }
 }

@@ -22,9 +22,10 @@ export class UserService {
           username: body.username,
           password: body.password ?? "123456",
           telephone: body.telephone,
-          name: body.name,
-          create_at: new Date(),
-          role: { uuid: body.role_uuid }
+          firstname: body.firstname,
+          lastname: body.lastname,
+          role: { id: body.role_id },
+          address: body.address
         })
         .execute()
       return;
@@ -35,13 +36,13 @@ export class UserService {
 
   async findAll() {
     try {
-      return await this.UserRepository.find({ where: { status: "active" }, relations: ["role"] });
+      return await this.UserRepository.find({ relations: ["role"] });
     } catch (error) {
       throw new Error(error.message)
     }
   }
 
-  async updateUser(uuid: string, body: IUpdateUser) {
+  async updateUser(id: number, body: IUpdateUser) {
     try {
       await this.UserRepository.createQueryBuilder('user')
         .update()
@@ -49,12 +50,12 @@ export class UserService {
           username: body.username,
           password: body.password,
           telephone: body.telephone,
-          name: body.name,
-          update_at: new Date(),
-          role: { uuid: body.role_uuid }
+          firstname: body.firstname,
+          lastname: body.lastname,
+          role: { id: body.role_id }
         })
         .where({
-          uuid: uuid
+          id: id
         })
         .execute()
       return;
@@ -63,27 +64,18 @@ export class UserService {
     }
   }
 
-  async deleteUser(uuid: string) {
+  async deleteUser(id: number) {
     try {
-      await this.UserRepository.createQueryBuilder('user')
-        .update()
-        .set({
-          status: "archived",
-          archive_at: new Date(),
-        })
-        .where({
-          uuid: uuid
-        })
-        .execute()
+      await this.UserRepository.delete(id)
       return;
     } catch (error) {
       throw new Error(error.message)
     }
   }
 
-  async findOne(uuid: UUID) {
+  async findOne(id: number) {
     try {
-      const user = await this.UserRepository.findOne({ where: { uuid: uuid } })
+      const user = await this.UserRepository.findOne({ where: { id: id } })
 
       return user;
     } catch (error) {
@@ -94,7 +86,7 @@ export class UserService {
 
   async getUserByUsername(username: string) {
     try {
-      const user = await this.UserRepository.findOne({ where: { username: username, status: "active" }, relations: ["role"] })
+      const user = await this.UserRepository.findOne({ where: { username: username }, relations: ["role"] })
       return user
     } catch (error) {
       throw new Error(error.message)

@@ -26,27 +26,27 @@ export class CustomerController {
     }
   }
 
-  @Get(':uuid')
-  async findOne(@Param('uuid') uuid: UUID) {
-    const customer = await this.customerService.findOne(uuid);
+  @Get(':id')
+  async findOne(@Param('id') id: number) {
+    const customer = await this.customerService.findOne(id);
     return {
       success: true,
       data: customer
     }
   }
 
-  @Patch(':uuid')
-  async update(@Param('uuid') uuid: UUID, @Body() body: ICreateCustomer) {
-    await this.customerService.update(uuid, body);
+  @Patch(':id')
+  async update(@Param('id') id: number, @Body() body: ICreateCustomer) {
+    await this.customerService.update(id, body);
     return {
       success: true,
       message: "Update Customer Success"
     }
   }
 
-  @Delete(':uuid')
-  async remove(@Param('uuid') uuid: UUID) {
-    await this.customerService.remove(uuid);
+  @Delete(':id')
+  async remove(@Param('id') id: number) {
+    await this.customerService.remove(id);
     return {
       success: true,
       message: "Delete Customer Success"

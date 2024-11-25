@@ -3,10 +3,10 @@ import { UUID } from "crypto"
 export class ICreateCar {
     car_number: string
     key_api?: string
-    user_uid?: UUID
+    user_id?: number
 }
 
 export class ICreateLine {
-    customer_uuid: UUID
-    car_uuid?: UUID
+    customer_id: number
+    car_id?: number
 }

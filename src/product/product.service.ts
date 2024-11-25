@@ -15,11 +15,9 @@ export class ProductService {
     try {
       await this.productRepository.createQueryBuilder('product')
         .insert().into(Product).values({
-          product_name: body.product_name,
-          product_number: body.product_number,
+          name: body.name,
           price: body.price,
-          stock: body.stock,
-          create_at: new Date(),
+          amount: body.amount,
 
         }).execute()
     } catch (error) {
@@ -29,43 +27,39 @@ export class ProductService {
 
   async findAll() {
     try {
-      const product = await this.productRepository.find({ where: { status: "active" } })
+      const product = await this.productRepository.find()
       return product
     } catch (error) {
       throw new Error(error.message)
     }
   }
 
-  async findOne(uuid: UUID) {
+  async findOne(id: number) {
     try {
-      const product = await this.productRepository.findOne({ where: { uuid: uuid } })
+      const product = await this.productRepository.findOne({ where: { id: id } })
       return product
     } catch (error) {
 
     }
   }
 
-  async update(uuid: UUID, body: IUpdateProduct) {
+  async update(id: number, body: IUpdateProduct) {
     try {
       await this.productRepository.createQueryBuilder('product')
         .update()
         .set({
-          product_name: body.product_name,
+          name: body.name,
           price: body.price,
-          stock: body.stock
+          amount: body.amount
         }).execute()
     } catch (error) {
       throw new Error(error.message)
     }
   }
 
-  async remove(uuid: UUID) {
+  async remove(id: number) {
     try {
-      await this.productRepository.createQueryBuilder('product')
-        .update()
-        .set({
-          status: "archived",
-        }).execute()
+      await this.productRepository.delete(id)
     } catch (error) {
       throw new Error(error.message)
     }

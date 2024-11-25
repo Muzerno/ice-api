@@ -1,25 +1,25 @@
 import { Column, Entity, OneToMany } from "typeorm";
 import { FactoryTemplate } from "./factory.template";
-import { Transportation_line } from "./transportation.entity";
+import { Line } from "./transportation.entity";
 @Entity()
 export class Customer extends FactoryTemplate {
 
-    @Column()
+    @Column({ length: 50 })
     name: string
 
-    @Column()
+    @Column({ length: 10 })
     telephone: string
 
-    @Column()
+    @Column({ length: 50 })
     latitude: string
 
-    @Column()
+    @Column({ length: 50 })
     longitude: string
 
     @Column({ type: "text" })
     address: string
 
-    @OneToMany(() => Transportation_line, transportation_line => transportation_line.customer)
-    transportation_lines: Transportation_line[]
+    @OneToMany(() => Line, Line => Line.customer)
+    Lines: Line[]
 
 }
