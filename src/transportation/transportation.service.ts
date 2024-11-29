@@ -78,7 +78,8 @@ export class TransportationService {
 
     async getAllLines() {
         try {
-            const lines = await this.LineRepository.find({ relations: ["transportation_car", "customer"] });
+            const lines = await this.LineRepository.find({ relations: ["transportation_car", "customer", "transportation_car.users"] });
+            console.log("lines", lines)
             return lines
         } catch (error) {
             throw new Error(error.message)

@@ -11,6 +11,7 @@ import { CredentialModule } from './credential/credential.module';
 import { RoleModule } from './role/role.module';
 import databaseConfig from './config/database.config';
 import { JwtModule } from '@nestjs/jwt';
+import { DashboardModule } from './dashboard/dashboard.module';
 import appConfig from './config/app.config';
 
 
@@ -32,6 +33,7 @@ import appConfig from './config/app.config';
     TransportationModule,
     CredentialModule,
     RoleModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

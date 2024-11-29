@@ -3,6 +3,7 @@ import { FactoryTemplate } from "src/entity/factory.template";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "./role.entity";
 import { Transportation_Car } from "./transport_car.entity";
+import { Withdraw } from "./withdraw.entity";
 @Entity()
 export class User extends FactoryTemplate {
 
@@ -30,5 +31,8 @@ export class User extends FactoryTemplate {
 
    @OneToOne(() => Transportation_Car, transportation_car => transportation_car.users)
    transportation_car: Transportation_Car
+
+   @OneToMany(() => Withdraw, withdraw => withdraw.user)
+   withdraws: Withdraw
 
 }
