@@ -4,6 +4,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGene
 import { Role } from "./role.entity";
 import { Transportation_Car } from "./transport_car.entity";
 import { Withdraw } from "./withdraw.entity";
+import { Manufacture } from "./manufacture.entit.entity";
 @Entity()
 export class User extends FactoryTemplate {
 
@@ -34,5 +35,8 @@ export class User extends FactoryTemplate {
 
    @OneToMany(() => Withdraw, withdraw => withdraw.user)
    withdraws: Withdraw
+
+   @OneToMany(() => Manufacture, manufacture => manufacture.user)
+   manufactures: Manufacture
 
 }

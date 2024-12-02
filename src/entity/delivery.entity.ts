@@ -10,7 +10,7 @@ export class Delivery extends FactoryTemplate {
     date_time: Date
 
     @Column()
-    status: boolean
+    delivery_status: boolean
 
     @Column()
     user_id: number

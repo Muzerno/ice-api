@@ -17,6 +17,10 @@ export class ProductController {
   async findAll() {
     return await this.productService.findAll();
   }
+  @Get(`/drowdown`)
+  async findAllDropDown() {
+    return await this.productService.findAllDropdown();
+  }
 
   @Get(':id')
   async findOne(@Param('id') id: number) {

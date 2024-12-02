@@ -8,7 +8,7 @@ export class DropOffPoint extends FactoryTemplate {
     drop_no: number;
 
     @Column()
-    status: boolean;
+    drop_status: boolean;
 
     @Column()
     latitude: string;

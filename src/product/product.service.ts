@@ -17,7 +17,7 @@ export class ProductService {
         .insert().into(Product).values({
           name: body.name,
           price: body.price,
-          amount: body.amount,
+          // amount: body.amount,
 
         }).execute()
     } catch (error) {
@@ -34,12 +34,25 @@ export class ProductService {
     }
   }
 
+  async findAllDropdown() {
+    try {
+      const product = await this.productRepository.find({
+        where: {
+          status: "active"
+        }
+      })
+      return product
+    } catch (error) {
+      throw new Error(error.message)
+    }
+  }
+
   async findOne(id: number) {
     try {
       const product = await this.productRepository.findOne({ where: { id: id } })
       return product
     } catch (error) {
-
+      throw new Error(error.message)
     }
   }
 
@@ -50,7 +63,7 @@ export class ProductService {
         .set({
           name: body.name,
           price: body.price,
-          amount: body.amount
+          // amount: body.amount
         }).execute()
     } catch (error) {
       throw new Error(error.message)
