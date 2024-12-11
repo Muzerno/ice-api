@@ -13,6 +13,7 @@ import databaseConfig from './config/database.config';
 import { JwtModule } from '@nestjs/jwt';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ManufactureModule } from './manufacture/manufacture.module';
+import { WithdrawModule } from './withdraw/withdraw.module';
 import appConfig from './config/app.config';
 
 
@@ -36,6 +37,7 @@ import appConfig from './config/app.config';
     RoleModule,
     DashboardModule,
     ManufactureModule,
+    WithdrawModule,
   ],
   controllers: [AppController],
   providers: [AppService],

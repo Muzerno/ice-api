@@ -31,12 +31,14 @@ export class ManufactureService {
             }
 
             const manufacture_details = new ManufactureDetail();
-            manufacture_details.amount = body.amount;
+            manufacture_details.manufacture_amount = body.amount;
             manufacture_details.date_time = body.date_time;
             manufacture_details.ice_id = body.product_id;
             manufacture_details.manufacture_id = savedManufacture.id;
+            const product = await this.productRepository.findOne({ where: { id: body.product_id } });
 
-            await this.productRepository.update(body.product_id, { status: "inactive" })
+            product.amount += body.amount
+            await this.productRepository.save(product)
             return await this.manufactureDetailRepository.save(manufacture_details);
         } catch (error) {
             console.log(error)
@@ -61,7 +63,7 @@ export class ManufactureService {
         });
 
         await this.manufactureDetailRepository.update(checkData.manufacture_details[0].id, {
-            amount: body.amount,
+            manufacture_amount: body.amount,
         })
 
         return true

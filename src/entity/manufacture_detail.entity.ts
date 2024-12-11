@@ -6,7 +6,7 @@ import { Product } from "./product.entity";
 @Entity({ name: "manufacture_detail" })
 export class ManufactureDetail extends FactoryTemplate {
     @Column()
-    amount: number
+    manufacture_amount: number
 
     @Column()
     date_time: Date
@@ -17,7 +17,7 @@ export class ManufactureDetail extends FactoryTemplate {
     @Column()
     manufacture_id: number
 
-    @OneToOne(() => Product, product => product.manufacture_detail)
+    @ManyToOne(() => Product, product => product.manufacture_detail)
     @JoinColumn({ name: "ice_id" })
     products: Product[]
 

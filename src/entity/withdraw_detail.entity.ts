@@ -1,6 +1,7 @@
-import { Column, Entity, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { FactoryTemplate } from "./factory.template";
 import { Withdraw } from "./withdraw.entity";
+import { Product } from "./product.entity";
 
 @Entity({ name: "withdraw_detail" })
 export class WithdrawDetail extends FactoryTemplate {
@@ -18,5 +19,10 @@ export class WithdrawDetail extends FactoryTemplate {
     withdraw_id: number
 
     @ManyToOne(() => Withdraw, withdraw => withdraw.withdraw_details)
+    @JoinColumn({ name: "withdraw_id" })
     withdraw: Withdraw
+
+    @ManyToOne(() => Product, product => product.withdraw_details)
+    @JoinColumn({ name: "ice_id" })
+    product: Product
 }
