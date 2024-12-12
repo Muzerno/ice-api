@@ -17,7 +17,7 @@ export class ProductService {
         .insert().into(Product).values({
           name: body.name,
           price: body.price,
-          // amount: body.amount,
+          amount: 0,
 
         }).execute()
     } catch (error) {
