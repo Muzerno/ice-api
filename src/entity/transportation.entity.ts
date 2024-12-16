@@ -13,6 +13,9 @@ export class Line extends FactoryTemplate {
     @Generated("increment")
     number: number
 
+    @Column()
+    line_name: string
+
     @Column({ nullable: true })
     car_id: number
 

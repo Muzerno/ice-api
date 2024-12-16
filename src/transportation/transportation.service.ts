@@ -65,12 +65,18 @@ export class TransportationService {
 
     async createLine(body: ICreateLine) {
         try {
-            await this.LineRepository.createQueryBuilder('Line').insert().values(
-                {
+            const TsLine = []
+            for (const item of body.customer_id) {
+                console.log(item)
+                TsLine.push({
+                    line_name: body.line_name,
                     car_id: body.car_id,
-                    customer_id: body.customer_id
-                }
-            ).execute();
+                    customer_id: item
+                })
+            }
+            await this.LineRepository.createQueryBuilder('Line')
+                .insert()
+                .values(TsLine).execute();
         } catch (error) {
             throw new Error(error.message)
         }
@@ -78,8 +84,9 @@ export class TransportationService {
 
     async getAllLines() {
         try {
-            const lines = await this.LineRepository.find({ relations: ["transportation_car", "customer", "transportation_car.users"] });
-            console.log("lines", lines)
+            const lines = await this.LineRepository.
+                find({ relations: ["transportation_car", "customer", "transportation_car.users"] });
+
             return lines
         } catch (error) {
             throw new Error(error.message)
