@@ -81,15 +81,29 @@ export class TransportationService {
             throw new Error(error.message)
         }
     }
-
     async getAllLines() {
         try {
-            const lines = await this.LineRepository.
-                find({ relations: ["transportation_car", "customer", "transportation_car.users"] });
+            const lines = await this.LineRepository.find({
+                relations: ["transportation_car", "customer", "transportation_car.users"]
+            });
 
-            return lines
+            const mergedData = lines.reduce((acc, line) => {
+                const existingLine = acc.find((l) => l.line_name === line.line_name && l.transportation_car.id === line.transportation_car.id);
+
+                if (existingLine) {
+                    if (!existingLine.customer) {
+                        existingLine.customer = [];
+                    }
+                    existingLine.customer.push(line.customer);
+                } else {
+                    acc.push({ ...line, customer: [line.customer] });
+                }
+                return acc;
+            }, []);
+
+            return mergedData;
         } catch (error) {
-            throw new Error(error.message)
+            throw new Error(error.message);
         }
     }
 
