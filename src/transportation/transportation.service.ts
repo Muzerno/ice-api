@@ -67,7 +67,7 @@ export class TransportationService {
         try {
             const TsLine = []
             for (const item of body.customer_id) {
-                console.log(item)
+
                 TsLine.push({
                     line_name: body.line_name,
                     car_id: body.car_id,
@@ -89,14 +89,16 @@ export class TransportationService {
 
             const mergedData = lines.reduce((acc, line) => {
                 const existingLine = acc.find((l) => l.line_name === line.line_name && l.transportation_car.id === line.transportation_car.id);
-
                 if (existingLine) {
+                    if (!existingLine.lineArray.includes(line.id)) {
+                        existingLine.lineArray.push(line.id);
+                    }
                     if (!existingLine.customer) {
                         existingLine.customer = [];
                     }
-                    existingLine.customer.push(line.customer);
+                    existingLine.customer.push({ ...line.customer, line_id: line.id });
                 } else {
-                    acc.push({ ...line, customer: [line.customer] });
+                    acc.push({ ...line, customer: [{ ...line.customer, line_id: line.id }], lineArray: [line.id], });
                 }
                 return acc;
             }, []);
@@ -135,6 +137,19 @@ export class TransportationService {
             throw new Error(error.message)
         }
     }
+
+    async deleteLineWithArray(id: number[]) {
+        try {
+            await this.LineRepository.createQueryBuilder('Line')
+                .delete()
+                .whereInIds(id).execute()
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+
+
+
 
 
 

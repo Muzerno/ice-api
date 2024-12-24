@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
 import { TransportationService } from './transportation.service';
 import { ICreateCar, ICreateLine } from './validator/validator';
 import { UUID } from 'crypto';
@@ -86,5 +86,10 @@ export class TransportationController {
   @Delete(':id')
   async deleteLine(@Param('id') id: number) {
     return this.transportationService.deleteLine(id);
+  }
+
+  @Patch('delete')
+  async deleteLineWithArray(@Body() body: { ids: number[] }) {
+    return this.transportationService.deleteLineWithArray(body.ids);
   }
 }
