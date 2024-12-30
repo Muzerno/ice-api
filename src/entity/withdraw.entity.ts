@@ -19,7 +19,7 @@ export class Withdraw extends FactoryTemplate {
     @OneToMany(() => WithdrawDetail, withdrawDetail => withdrawDetail.withdraw)
     withdraw_details: WithdrawDetail[]
 
-    @OneToOne(() => Transportation_Car, transportation_car => transportation_car.withdraw)
+    @ManyToOne(() => Transportation_Car, transportation_car => transportation_car.withdraw)
     @JoinColumn({ name: "car_id" })
     transportation_car: Transportation_Car
 

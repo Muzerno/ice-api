@@ -28,6 +28,6 @@ export class Transportation_Car extends FactoryTemplate {
     @OneToOne(() => Loading, loading => loading.transportation_car)
     loading: Loading
 
-    @OneToOne(() => Withdraw, withdraw => withdraw.transportation_car)
+    @OneToMany(() => Withdraw, withdraw => withdraw.transportation_car)
     withdraw: Withdraw
 }

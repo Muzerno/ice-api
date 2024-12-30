@@ -4,7 +4,7 @@ import { Transportation_Car } from 'src/entity/transport_car.entity';
 import { Line } from 'src/entity/transportation.entity';
 import { Repository } from 'typeorm';
 import { ICreateCar, ICreateLine } from './validator/validator';
-import { UUID } from 'crypto';
+
 
 @Injectable()
 export class TransportationService {
