@@ -11,6 +11,9 @@ export class Withdraw extends FactoryTemplate {
     data_time: Date
 
     @Column()
+    to_day: string
+
+    @Column()
     user_id: number
 
     @Column()
