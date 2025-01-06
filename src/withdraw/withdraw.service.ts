@@ -31,10 +31,12 @@ export class WithdrawService {
         const existingWithdraw = await this.withdrawRepository.findOne({ where: { user_id: withdrawData.user_id, car_id: withdrawData.car_id, to_day: format(new Date(), 'yyyy-MM-dd') } });
         let savedWithdraw;
         if (existingWithdraw) {
+            console.log("if1")
             if (format(existingWithdraw.data_time, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')) {
                 existingWithdraw.status = "active";
                 savedWithdraw = await this.withdrawRepository.update(existingWithdraw.id, existingWithdraw);
             } else {
+
                 const withdraw = new Withdraw();
                 withdraw.user_id = withdrawData.user_id;
                 withdraw.car_id = withdrawData.car_id;
@@ -43,6 +45,7 @@ export class WithdrawService {
                 savedWithdraw = await this.withdrawRepository.save(withdraw);
             }
         } else {
+            console.log("else2")
             const withdraw = new Withdraw();
             withdraw.user_id = withdrawData.user_id;
             withdraw.car_id = withdrawData.car_id;
@@ -50,11 +53,22 @@ export class WithdrawService {
             withdraw.to_day = format(new Date(), 'yyyy-MM-dd');
             savedWithdraw = await this.withdrawRepository.save(withdraw);
         }
-        if (format(existingWithdraw.data_time, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')) {
-            const withdrawDetailData = await this.withdrawDetailRepository.findOne({ where: { withdraw_id: savedWithdraw.id ?? existingWithdraw.id, ice_id: withdrawData.product_id } });
-            if (withdrawDetailData) {
-                withdrawDetailData.amount += withdrawData.amount;
-                await this.withdrawDetailRepository.save(withdrawDetailData);
+        if (existingWithdraw) {
+            if (format(existingWithdraw?.data_time, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')) {
+                console.log("if3")
+                const withdrawDetailData = await this.withdrawDetailRepository.findOne({ where: { withdraw_id: savedWithdraw.id ?? existingWithdraw.id, ice_id: withdrawData.product_id } });
+                if (withdrawDetailData) {
+                    console.log("if4")
+                    withdrawDetailData.amount += withdrawData.amount;
+                    await this.withdrawDetailRepository.save(withdrawDetailData);
+                } else {
+                    const withdrawDetail = new WithdrawDetail();
+                    withdrawDetail.amount = withdrawData.amount;
+                    withdrawDetail.date_time = new Date();
+                    withdrawDetail.ice_id = withdrawData.product_id;
+                    withdrawDetail.withdraw_id = savedWithdraw.id ?? existingWithdraw.id;
+                    await this.withdrawDetailRepository.save(withdrawDetail);
+                }
             } else {
                 const withdrawDetail = new WithdrawDetail();
                 withdrawDetail.amount = withdrawData.amount;
@@ -68,11 +82,11 @@ export class WithdrawService {
             withdrawDetail.amount = withdrawData.amount;
             withdrawDetail.date_time = new Date();
             withdrawDetail.ice_id = withdrawData.product_id;
-            withdrawDetail.withdraw_id = savedWithdraw.id ?? existingWithdraw.id;
+            withdrawDetail.withdraw_id = savedWithdraw.id
             await this.withdrawDetailRepository.save(withdrawDetail);
         }
-        await this.productRepository.update({ id: withdrawData.product_id }, { amount: checkProduct.amount - withdrawData.amount });
 
+        await this.productRepository.update({ id: withdrawData.product_id }, { amount: checkProduct.amount - withdrawData.amount });
         return { success: true, message: "Withdraw created successfully" };
     }
 
