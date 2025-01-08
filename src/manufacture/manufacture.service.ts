@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Manufacture } from 'src/entity/manufacture.entit.entity';
 import { ManufactureDetail } from 'src/entity/manufacture_detail.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { ICreateManufacture } from './validator/validator';
 import { Product } from 'src/entity/product.entity';
 
@@ -46,11 +46,14 @@ export class ManufactureService {
         }
     }
 
-
-    async findAll() {
-        return await this.manufactureRepository.find({ relations: ["manufacture_details", "user", "manufacture_details.products"] });
+    async findAll(date: string): Promise<Manufacture[]> {
+        return await this.manufactureRepository.find({
+            where: {
+                date_time: ILike(`%${date}%`) as any // Cast to any to bypass type checking
+            },
+            relations: ["manufacture_details", "user", "manufacture_details.products"]
+        });
     }
-
     async findOne(id: number) {
         return await this.manufactureRepository.findOne({ where: { id: id } });
     }

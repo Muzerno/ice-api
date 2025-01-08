@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ManufactureService } from './manufacture.service';
 import { ICreateManufacture } from './validator/validator';
 import { Response } from 'express';
@@ -15,8 +15,9 @@ export class ManufactureController {
   }
 
   @Get()
-  async findAll() {
-    return await this.manufactureService.findAll();
+  async findAll(@Query() query: { date: string }) {
+
+    return await this.manufactureService.findAll(query.date);
   }
 
   @Get(':id')
