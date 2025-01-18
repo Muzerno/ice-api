@@ -8,7 +8,7 @@ import { User } from "./user.entity";
 @Entity()
 export class Withdraw extends FactoryTemplate {
     @Column()
-    data_time: Date
+    date_time: Date
 
     @Column()
     to_day: string

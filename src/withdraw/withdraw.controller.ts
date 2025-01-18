@@ -19,6 +19,9 @@ export class WithdrawController {
   @Post()
   async create(@Body() createWithdrawDto: IReqCreateWithdraw) {
     const res = await this.withdrawService.createWithdraw(createWithdrawDto);
-    return res
+    return {
+      success: true,
+      data: res
+    }
   }
 }

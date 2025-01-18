@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ManufactureService } from './manufacture.service';
-import { ICreateManufacture } from './validator/validator';
+import { ICreateManufacture, IUpdateManufacture } from './validator/validator';
 import { Response } from 'express';
 
 @Controller('manufacture')
@@ -26,7 +26,7 @@ export class ManufactureController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: number, @Body() body: ICreateManufacture) {
+  async update(@Param('id') id: number, @Body() body: IUpdateManufacture) {
     return await this.manufactureService.update(id, body);
   }
 
