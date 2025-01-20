@@ -4,6 +4,7 @@ import { Transportation_Car } from 'src/entity/transport_car.entity';
 import { Line } from 'src/entity/transportation.entity';
 import { Repository } from 'typeorm';
 import { ICreateCar, ICreateLine } from './validator/validator';
+import { DropOffPoint } from 'src/entity/drop_off_point.entity';
 
 
 @Injectable()
@@ -14,6 +15,9 @@ export class TransportationService {
 
         @InjectRepository(Line)
         private LineRepository: Repository<Line>,
+
+        @InjectRepository(DropOffPoint)
+        private dropOffPointRepository: Repository<DropOffPoint>
     ) { }
 
     async createCar(body: ICreateCar) {
@@ -66,6 +70,7 @@ export class TransportationService {
     async createLine(body: ICreateLine) {
         try {
             const TsLine = []
+            const dropOffPoints = [];
             for (const item of body.customer_id) {
 
                 TsLine.push({
@@ -74,6 +79,7 @@ export class TransportationService {
                     customer_id: item
                 })
             }
+
             await this.LineRepository.createQueryBuilder('Line')
                 .insert()
                 .values(TsLine).execute();

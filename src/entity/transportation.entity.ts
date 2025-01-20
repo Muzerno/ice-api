@@ -1,8 +1,9 @@
-import { Column, Entity, Generated, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { FactoryTemplate } from "./factory.template";
 import { UUID } from "crypto";
 import { Transportation_Car } from "./transport_car.entity";
 import { Customer } from "./customer.entity";
+import { DropOffPoint } from "./drop_off_point.entity";
 
 @Entity({ name: "line" })
 export class Line extends FactoryTemplate {
@@ -26,4 +27,7 @@ export class Line extends FactoryTemplate {
     @ManyToOne(() => Customer, customer => customer.Lines)
     @JoinColumn({ name: "customer_id" })
     customer: Customer
+
+    @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.line)
+    dropOffPoints: DropOffPoint[]
 }

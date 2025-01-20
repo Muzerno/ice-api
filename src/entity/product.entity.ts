@@ -3,6 +3,8 @@ import { FactoryTemplate } from "./factory.template";
 import { Loading } from "./loading.entity";
 import { ManufactureDetail } from "./manufacture_detail.entity";
 import { WithdrawDetail } from "./withdraw_detail.entity";
+import { OrderCustomer } from "./order_customer.entity";
+import { OrderCustomerDetail } from "./order_customer_detail.entity";
 @Entity({ name: "ice" })
 export class Product extends FactoryTemplate {
 
@@ -24,4 +26,7 @@ export class Product extends FactoryTemplate {
 
     @OneToMany(() => WithdrawDetail, withdrawDetail => withdrawDetail.product)
     withdraw_details: WithdrawDetail[]
+
+    @ManyToOne(() => OrderCustomerDetail, orderCustomer => orderCustomer.product)
+    order_customer_details: OrderCustomer
 }

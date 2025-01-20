@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany } from "typeorm";
 import { FactoryTemplate } from "./factory.template";
 import { Line } from "./transportation.entity";
+import { DropOffPoint } from "./drop_off_point.entity";
 @Entity()
 export class Customer extends FactoryTemplate {
 
@@ -21,5 +22,8 @@ export class Customer extends FactoryTemplate {
 
     @OneToMany(() => Line, Line => Line.customer)
     Lines: Line[]
+
+    @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.customer)
+    drop_off_points: DropOffPoint[]
 
 }

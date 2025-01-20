@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { WithdrawService } from './withdraw.service';
-import { IReqCreateWithdraw } from './validator/validator';
+import { ICreateOrderVip, IReqCreateWithdraw } from './validator/validator';
 
 @Controller('withdraw')
 export class WithdrawController {
@@ -22,6 +22,32 @@ export class WithdrawController {
     return {
       success: true,
       data: res
+    }
+  }
+
+  @Post('/vip')
+  async createVip(@Body() createWithdrawDto: ICreateOrderVip) {
+    const res = await this.withdrawService.createOrderVip(createWithdrawDto);
+    return {
+      success: true,
+      data: res
+    }
+  }
+
+  @Get('/vip/')
+  async findAllVip() {
+    const withdraws = await this.withdrawService.findAllOrdeVip();
+    return {
+      success: true,
+      data: withdraws
+    }
+  }
+
+  @Delete('/vip/:id')
+  async removeOrderVip(@Param('id') id: number) {
+    await this.withdrawService.removeOrderVip(id);
+    return {
+      success: true
     }
   }
 }

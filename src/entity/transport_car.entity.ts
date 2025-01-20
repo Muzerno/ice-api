@@ -5,6 +5,8 @@ import { User } from "./user.entity";
 import { Line } from "./transportation.entity";
 import { Loading } from "./loading.entity";
 import { Withdraw } from "./withdraw.entity";
+import { OrderCustomer } from "./order_customer.entity";
+import { DropOffPoint } from "./drop_off_point.entity";
 
 @Entity({ name: "car" })
 export class Transportation_Car extends FactoryTemplate {
@@ -30,4 +32,10 @@ export class Transportation_Car extends FactoryTemplate {
 
     @OneToMany(() => Withdraw, withdraw => withdraw.transportation_car)
     withdraw: Withdraw
+
+    @OneToMany(() => OrderCustomer, orderCustomer => orderCustomer.transportation_car)
+    customer_orders: OrderCustomer[]
+
+    @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.car)
+    dropOffPoints: DropOffPoint[]
 }
