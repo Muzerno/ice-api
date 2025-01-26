@@ -184,7 +184,7 @@ export class WithdrawService {
 
                 const dropOffPoint = new DropOffPoint();
                 dropOffPoint.status = "active"; // Default status, adjust as needed
-                dropOffPoint.drop_status = "processing";
+                dropOffPoint.drop_status = "inprogress";
                 dropOffPoint.latitude = body.latitude;
                 dropOffPoint.longitude = body.longitude;
                 dropOffPoint.drop_type = "order";

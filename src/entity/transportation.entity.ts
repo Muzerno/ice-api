@@ -28,6 +28,6 @@ export class Line extends FactoryTemplate {
     @JoinColumn({ name: "customer_id" })
     customer: Customer
 
-    @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.line)
+    @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.line, { onDelete: "CASCADE" })
     dropOffPoints: DropOffPoint[]
 }

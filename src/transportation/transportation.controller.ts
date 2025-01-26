@@ -78,6 +78,10 @@ export class TransportationController {
     return this.transportationService.getLine(id);
   }
 
+  @Get('line/byCar/:car_id')
+  async getLineByCar(@Param('car_id') car_id: number) {
+    return this.transportationService.getLineByCarId(car_id);
+  }
   @Put(':id')
   async updateLine(@Param('id') id: number, @Body() body: any) {
     return this.transportationService.updateLine(id, body);
@@ -91,5 +95,10 @@ export class TransportationController {
   @Patch('delete')
   async deleteLineWithArray(@Body() body: { ids: number[] }) {
     return this.transportationService.deleteLineWithArray(body.ids);
+  }
+
+  @Patch('update/DaliveryStatus/:id')
+  async updateDeliveryStatus(@Param('id') id: number, @Body() body: { status: string }) {
+    return this.transportationService.updateDeliveryStatus(id, body);
   }
 }

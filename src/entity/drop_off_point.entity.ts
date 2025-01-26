@@ -32,7 +32,7 @@ export class DropOffPoint extends FactoryTemplate {
     @Column({ nullable: true })
     car_id: number
 
-    @ManyToOne(() => Line, line => line.dropOffPoints)
+    @ManyToOne(() => Line, line => line.dropOffPoints, { onDelete: "CASCADE", onUpdate: "CASCADE" })
     @JoinColumn({ name: "line_id" })
     line: Line
 

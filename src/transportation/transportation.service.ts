@@ -70,7 +70,7 @@ export class TransportationService {
     async createLine(body: ICreateLine) {
         try {
             const TsLine = []
-            const dropOffPoints = [];
+            const dropOff = []
             for (const item of body.customer_id) {
 
                 TsLine.push({
@@ -78,11 +78,31 @@ export class TransportationService {
                     car_id: body.car_id,
                     customer_id: item
                 })
-            }
 
-            await this.LineRepository.createQueryBuilder('Line')
+            }
+            const result = await this.LineRepository.createQueryBuilder('Line')
                 .insert()
-                .values(TsLine).execute();
+                .values(TsLine)
+                .execute();
+
+            for (const line of result.identifiers) {
+                const insertedLine = await this.LineRepository.findOne({ where: { id: line.id }, relations: ['customer'] });
+                if (insertedLine) {
+                    dropOff.push({
+                        drop_type: "dayly",
+                        drop_status: "inprogress",
+                        car_id: body.car_id,
+                        customer_id: insertedLine.customer.id,
+                        latitude: insertedLine.customer.latitude,
+                        longitude: insertedLine.customer.longitude,
+                        line_id: line.id
+                    });
+                }
+            }
+            await this.dropOffPointRepository.createQueryBuilder('drop_off_point')
+                .insert()
+                .values(dropOff)
+                .execute();
         } catch (error) {
             throw new Error(error.message)
         }
@@ -112,6 +132,36 @@ export class TransportationService {
             return mergedData;
         } catch (error) {
             throw new Error(error.message);
+        }
+    }
+
+    async getLineByCarId(carId: number) {
+        try {
+
+            const drop_off_points = await this.dropOffPointRepository.createQueryBuilder('dropOffPoint')
+                .where({ car_id: carId })
+                .andWhere('dropOffPoint.createAt BETWEEN :start AND :end', { start: new Date().toISOString().split('T')[0] + ' 00:00:00', end: new Date().toISOString().split('T')[0] + ' 23:59:59' })
+                .leftJoinAndSelect('dropOffPoint.line', 'line')
+                .leftJoinAndSelect('dropOffPoint.customer', 'customer')
+                .getMany();
+            const drop_dayly: any = []
+            const drop_order: any = []
+            drop_off_points.map((item) => {
+
+                if (item.drop_type === 'dayly') {
+                    drop_dayly.push(item)
+                } else if (item.drop_type === 'order') {
+                    drop_order.push(item)
+                }
+
+            })
+
+            return {
+                drop_dayly: drop_dayly,
+                drop_order: drop_order
+            }
+        } catch (error) {
+            throw new Error(error.message)
         }
     }
 
@@ -151,6 +201,21 @@ export class TransportationService {
                 .whereInIds(id).execute()
         } catch (error) {
             throw new Error(error.message)
+        }
+    }
+    async updateDeliveryStatus(id: number, body: { status: string }) {
+        try {
+            const drop_off_point = await this.dropOffPointRepository.findOne({ where: { id: id } });
+            if (!drop_off_point) {
+                throw new Error('Delivery not found');
+            }
+            drop_off_point.drop_status = body.status;
+            await this.dropOffPointRepository.save(drop_off_point);
+            return {
+                success: true, message: "Update Delivery Status Success"
+            }
+        } catch (error) {
+            throw new Error(error.message);
         }
     }
 
