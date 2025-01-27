@@ -143,9 +143,12 @@ export class TransportationService {
                 .andWhere('dropOffPoint.createAt BETWEEN :start AND :end', { start: new Date().toISOString().split('T')[0] + ' 00:00:00', end: new Date().toISOString().split('T')[0] + ' 23:59:59' })
                 .leftJoinAndSelect('dropOffPoint.line', 'line')
                 .leftJoinAndSelect('dropOffPoint.customer', 'customer')
+                .leftJoinAndSelect('dropOffPoint.customer_order', 'customer_order')
                 .getMany();
             const drop_dayly: any = []
             const drop_order: any = []
+
+            console.log("drop_off_points", drop_off_points)
             drop_off_points.map((item) => {
 
                 if (item.drop_type === 'dayly') {
