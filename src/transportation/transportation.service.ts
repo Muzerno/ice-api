@@ -209,7 +209,9 @@ export class TransportationService {
             if (!drop_off_point) {
                 throw new Error('Delivery not found');
             }
+
             drop_off_point.drop_status = body.status;
+            await this.dropOffPointRepository.save(drop_off_point);
             return {
                 success: true, message: "Update Delivery Status Success"
             }
