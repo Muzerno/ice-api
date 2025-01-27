@@ -148,7 +148,7 @@ export class TransportationService {
             const drop_dayly: any = []
             const drop_order: any = []
 
-            console.log("drop_off_points", drop_off_points)
+
             drop_off_points.map((item) => {
 
                 if (item.drop_type === 'dayly') {
