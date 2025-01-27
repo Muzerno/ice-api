@@ -98,7 +98,7 @@ export class TransportationController {
   }
 
   @Patch('update/DaliveryStatus/:id')
-  async updateDeliveryStatus(@Param('id') id: number, @Body() body: { status: string, latitude: number, longitude: number }) {
+  async updateDeliveryStatus(@Param('id') id: number, @Body() body: { status: string }) {
     return this.transportationService.updateDeliveryStatus(id, body);
   }
 

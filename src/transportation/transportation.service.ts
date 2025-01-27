@@ -203,7 +203,7 @@ export class TransportationService {
             throw new Error(error.message)
         }
     }
-    async updateDeliveryStatus(id: number, body: { status: string, latitude: number, longitude: number }) {
+    async updateDeliveryStatus(id: number, body: { status: string }) {
         try {
             const drop_off_point = await this.dropOffPointRepository.findOne({ where: { id: id } });
             if (!drop_off_point) {
