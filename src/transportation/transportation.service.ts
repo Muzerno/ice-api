@@ -203,14 +203,13 @@ export class TransportationService {
             throw new Error(error.message)
         }
     }
-    async updateDeliveryStatus(id: number, body: { status: string }) {
+    async updateDeliveryStatus(id: number, body: { status: string, latitude: number, longitude: number }) {
         try {
             const drop_off_point = await this.dropOffPointRepository.findOne({ where: { id: id } });
             if (!drop_off_point) {
                 throw new Error('Delivery not found');
             }
             drop_off_point.drop_status = body.status;
-            await this.dropOffPointRepository.save(drop_off_point);
             return {
                 success: true, message: "Update Delivery Status Success"
             }
