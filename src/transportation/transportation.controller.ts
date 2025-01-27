@@ -101,4 +101,9 @@ export class TransportationController {
   async updateDeliveryStatus(@Param('id') id: number, @Body() body: { status: string, latitude: number, longitude: number }) {
     return this.transportationService.updateDeliveryStatus(id, body);
   }
+
+  // @Post('/update/location/:car_id')
+  // async updateLocation(@Param('car_id') car_id: number, @Body() body: { latitude: number, longitude: number }) {
+  //   return this.transportationService.updateLocation(car_id, body);
+  // }
 }
