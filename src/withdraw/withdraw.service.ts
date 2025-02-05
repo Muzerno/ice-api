@@ -49,6 +49,7 @@ export class WithdrawService {
                 where: {
                     user_id: withdrawData.user_id,
                     car_id: withdrawData.car_id,
+                    line_id: withdrawData.line_id,
                     to_day: formattedToday
                 }
             });
@@ -57,6 +58,7 @@ export class WithdrawService {
                 const withdraw = new Withdraw();
                 withdraw.user_id = withdrawData.user_id;
                 withdraw.car_id = withdrawData.car_id;
+                withdraw.line_id = withdrawData.line_id;
                 withdraw.date_time = today;
                 withdraw.to_day = formattedToday;
                 savedWithdraw = await this.withdrawRepository.save(withdraw);
@@ -132,7 +134,7 @@ export class WithdrawService {
         }
     }
     async findAllWithdraws(): Promise<Withdraw[]> {
-        return this.withdrawRepository.find({ relations: ["user", "transportation_car", "withdraw_details", "withdraw_details.product"], order: { id: "DESC" } });
+        return this.withdrawRepository.find({ relations: ["user", "withdraw_details", "withdraw_details.product", "line"], order: { id: "DESC" } });
     }
 
     async findAllOrdeVip(): Promise<OrderCustomer[]> {

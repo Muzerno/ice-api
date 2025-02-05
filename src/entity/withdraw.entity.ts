@@ -3,6 +3,7 @@ import { FactoryTemplate } from "./factory.template";
 import { WithdrawDetail } from "./withdraw_detail.entity";
 import { Transportation_Car } from "./transport_car.entity";
 import { User } from "./user.entity";
+import { Line } from "./transportation.entity";
 
 
 @Entity()
@@ -19,12 +20,19 @@ export class Withdraw extends FactoryTemplate {
     @Column()
     car_id: number
 
+    @Column()
+    line_id: number
+
     @OneToMany(() => WithdrawDetail, withdrawDetail => withdrawDetail.withdraw)
     withdraw_details: WithdrawDetail[]
 
     @ManyToOne(() => Transportation_Car, transportation_car => transportation_car.withdraw)
     @JoinColumn({ name: "car_id" })
     transportation_car: Transportation_Car
+
+    @ManyToOne(() => Line, line => line.withdraws)
+    @JoinColumn({ name: "line_id" })
+    line: Line
 
     @ManyToOne(() => User, user => user.withdraws)
     @JoinColumn({ name: "user_id" })

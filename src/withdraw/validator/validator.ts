@@ -3,6 +3,7 @@ export interface IReqCreateWithdraw {
     user_id: number
     amount: object
     product_id: number[]
+    line_id: number
 }
 
 export interface ICreateOrderVip {

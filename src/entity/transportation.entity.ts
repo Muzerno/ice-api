@@ -4,6 +4,7 @@ import { UUID } from "crypto";
 import { Transportation_Car } from "./transport_car.entity";
 import { Customer } from "./customer.entity";
 import { DropOffPoint } from "./drop_off_point.entity";
+import { Withdraw } from "./withdraw.entity";
 
 @Entity({ name: "line" })
 export class Line extends FactoryTemplate {
@@ -27,6 +28,9 @@ export class Line extends FactoryTemplate {
     @ManyToOne(() => Customer, customer => customer.Lines)
     @JoinColumn({ name: "customer_id" })
     customer: Customer
+
+    @OneToMany(() => Withdraw, withdraw => withdraw.line)
+    withdraws: Withdraw[]
 
     @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.line, { onDelete: "CASCADE" })
     dropOffPoints: DropOffPoint[]

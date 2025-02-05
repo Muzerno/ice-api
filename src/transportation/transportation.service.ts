@@ -147,16 +147,12 @@ export class TransportationService {
                 .getMany();
             const drop_dayly: any = []
             const drop_order: any = []
-
-
             drop_off_points.map((item) => {
-
                 if (item.drop_type === 'dayly') {
                     drop_dayly.push(item)
                 } else if (item.drop_type === 'order') {
                     drop_order.push(item)
                 }
-
             })
 
             return {
@@ -180,9 +176,14 @@ export class TransportationService {
 
     async updateLine(id: number, body: any) {
         try {
-            await this.LineRepository.createQueryBuilder('Line').update()
-                .set({ // ...
-                }).where({ id: id }).execute();
+            await this.LineRepository.createQueryBuilder('Line')
+                .update()
+                .where({ id: id })
+                .set({
+                    line_name: body.line_name,
+                    car_id: body.car_id,
+                    customer_id: body.customer_id
+                })
         } catch (error) {
             throw new Error(error.message)
         }
