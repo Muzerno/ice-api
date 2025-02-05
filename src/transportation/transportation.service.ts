@@ -53,7 +53,7 @@ export class TransportationService {
     async updateCar(id: number, body) {
         try {
             await this.transportationRepository.createQueryBuilder('transportation_car').update()
-                .set({ car_number: body.car_number, key_api: body.key_api }).where({ id: id }).execute();
+                .set({ car_number: body.car_number, key_api: body.key_api, user_id: body.user_id }).where({ id: id }).execute();
         } catch (error) {
             throw new Error(error.message)
         }

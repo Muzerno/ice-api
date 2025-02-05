@@ -4,6 +4,7 @@ export class ICreateCustomer {
     latitude: string
     longitude: string
     address: string
+    customer_code: string
 }
 
 

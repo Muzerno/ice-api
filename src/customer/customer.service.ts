@@ -20,6 +20,7 @@ export class CustomerService {
         latitude: body.latitude,
         longitude: body.longitude,
         address: body.address,
+        customer_code: body.customer_code
       }).execute()
     } catch (error) {
       throw new Error(error.message)
@@ -46,9 +47,13 @@ export class CustomerService {
 
   async update(id: number, body: ICreateCustomer) {
     try {
+      console.log("body", body)
       await this.customerRepository.createQueryBuilder('customer').update()
-        .set({ name: body.name, latitude: body.latitude, longitude: body.longitude, address: body.address })
-        .where({ id: id }).execute()
+        .where({ id: id })
+        .set({
+          ...body
+        })
+        .execute()
     } catch (error) {
       throw new Error(error.message)
     }

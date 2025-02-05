@@ -60,10 +60,10 @@ export class ProductService {
     try {
       await this.productRepository.createQueryBuilder('product')
         .update()
+        .where({ id: id })
         .set({
           name: body.name,
           price: body.price,
-          // amount: body.amount
         }).execute()
     } catch (error) {
       throw new Error(error.message)

@@ -20,6 +20,9 @@ export class Customer extends FactoryTemplate {
     @Column({ type: "text" })
     address: string
 
+    @Column({ length: 50 })
+    customer_code: string
+
     @OneToMany(() => Line, Line => Line.customer)
     Lines: Line[]
 
