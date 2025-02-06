@@ -5,7 +5,7 @@ import { Role } from "./role.entity";
 import { Transportation_Car } from "./transport_car.entity";
 import { Withdraw } from "./withdraw.entity";
 import { Manufacture } from "./manufacture.entit.entity";
-@Entity()
+@Entity({name:"users"})
 export class User extends FactoryTemplate {
 
    @Column({ length: 50 })
