@@ -85,24 +85,7 @@ export class TransportationService {
                 .values(TsLine)
                 .execute();
 
-            for (const line of result.identifiers) {
-                const insertedLine = await this.LineRepository.findOne({ where: { id: line.id }, relations: ['customer'] });
-                if (insertedLine) {
-                    dropOff.push({
-                        drop_type: "dayly",
-                        drop_status: "inprogress",
-                        car_id: body.car_id,
-                        customer_id: insertedLine.customer.id,
-                        latitude: insertedLine.customer.latitude,
-                        longitude: insertedLine.customer.longitude,
-                        line_id: line.id
-                    });
-                }
-            }
-            await this.dropOffPointRepository.createQueryBuilder('drop_off_point')
-                .insert()
-                .values(dropOff)
-                .execute();
+            return result
         } catch (error) {
             throw new Error(error.message)
         }
