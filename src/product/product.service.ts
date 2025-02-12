@@ -77,4 +77,8 @@ export class ProductService {
       throw new Error(error.message)
     }
   }
+
+  async findAllProductInCar(car_id: number) {
+
+  }
 }

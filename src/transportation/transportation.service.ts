@@ -5,6 +5,7 @@ import { Line } from 'src/entity/transportation.entity';
 import { Repository } from 'typeorm';
 import { ICreateCar, ICreateLine } from './validator/validator';
 import { DropOffPoint } from 'src/entity/drop_off_point.entity';
+import { format } from 'date-fns';
 
 
 @Injectable()
@@ -118,16 +119,18 @@ export class TransportationService {
         }
     }
 
-    async getLineByCarId(carId: number) {
+    async getLineByCarId(carId: number, date: string) {
         try {
-
-            const drop_off_points = await this.dropOffPointRepository.createQueryBuilder('dropOffPoint')
+            const drop_off_points = await this.dropOffPointRepository.createQueryBuilder('d')
                 .where({ car_id: carId })
-                .andWhere('dropOffPoint.createAt BETWEEN :start AND :end', { start: new Date().toISOString().split('T')[0] + ' 00:00:00', end: new Date().toISOString().split('T')[0] + ' 23:59:59' })
-                .leftJoinAndSelect('dropOffPoint.line', 'line')
-                .leftJoinAndSelect('dropOffPoint.customer', 'customer')
-                .leftJoinAndSelect('dropOffPoint.customer_order', 'customer_order')
+                .andWhere('d.createAt <= :date', { date: `${date} 23:59:59` })
+                .leftJoinAndSelect('d.line', 'line')
+                .leftJoinAndSelect('d.customer', 'customer')
+                .leftJoinAndSelect('d.customer_order', 'customer_order')
+                .orderBy('d.createAt', 'DESC')
                 .getMany();
+
+            console.log(drop_off_points)
             const drop_dayly: any = []
             const drop_order: any = []
             drop_off_points.map((item) => {

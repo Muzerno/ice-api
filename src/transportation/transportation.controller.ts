@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { TransportationService } from './transportation.service';
 import { ICreateCar, ICreateLine } from './validator/validator';
 import { UUID } from 'crypto';
@@ -79,8 +79,8 @@ export class TransportationController {
   }
 
   @Get('line/byCar/:car_id')
-  async getLineByCar(@Param('car_id') car_id: number) {
-    return this.transportationService.getLineByCarId(car_id);
+  async getLineByCar(@Param('car_id') car_id: number, @Query('date') date: string) {
+    return this.transportationService.getLineByCarId(car_id, date);
   }
   @Put(':id')
   async updateLine(@Param('id') id: number, @Body() body: any) {

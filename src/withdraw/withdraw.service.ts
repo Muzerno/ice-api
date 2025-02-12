@@ -121,8 +121,9 @@ export class WithdrawService {
                 dropOffPoint.customer_id = lineItem.customer_id;
                 dropOffPoint.latitude = lineItem.customer.latitude;
                 dropOffPoint.longitude = lineItem.customer.longitude;
+                dropOffPoint.car_id = withdrawData.car_id;
                 dropOffPoint.status = "active";
-                dropOffPoint.drop_status = "processing";
+                dropOffPoint.drop_status = "inprogress";
                 dropOffPoint.drop_type = "dayly";
                 dropOffPoint.createAt = new Date();
                 await this.dropOffPointRepository.save(dropOffPoint);
