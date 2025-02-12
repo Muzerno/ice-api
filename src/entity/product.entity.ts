@@ -5,6 +5,7 @@ import { ManufactureDetail } from "./manufacture_detail.entity";
 import { WithdrawDetail } from "./withdraw_detail.entity";
 import { OrderCustomer } from "./order_customer.entity";
 import { OrderCustomerDetail } from "./order_customer_detail.entity";
+import { StockCar } from "./stock_car.entity";
 @Entity({ name: "ice" })
 export class Product extends FactoryTemplate {
 
@@ -29,4 +30,7 @@ export class Product extends FactoryTemplate {
 
     @ManyToOne(() => OrderCustomerDetail, orderCustomer => orderCustomer.product)
     order_customer_details: OrderCustomer
+
+    @ManyToOne(() => StockCar, stockCar => stockCar.product)
+    stock_car: StockCar
 }

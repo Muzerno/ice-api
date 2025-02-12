@@ -4,12 +4,16 @@ import { Product } from 'src/entity/product.entity';
 import { Repository } from 'typeorm';
 import { ICreateProduct, IUpdateProduct } from './validator/validator';
 import { UUID } from 'crypto';
+import { StockCar } from 'src/entity/stock_car.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
-    private productRepository: Repository<Product>
+    private productRepository: Repository<Product>,
+
+    @InjectRepository(StockCar)
+    private stockInCarRepository: Repository<StockCar>
   ) { }
   async create(body: ICreateProduct) {
     try {
@@ -79,6 +83,22 @@ export class ProductService {
   }
 
   async findAllProductInCar(car_id: number) {
-
+    try {
+      const product = await this.stockInCarRepository.createQueryBuilder('s')
+        .select([
+          `s.id as id`,
+          `s.product_id as product_id`,
+          `s.amount as stock_amount`,
+          `p.name as product_name`,
+          `p.amount as product_amount`,
+          `p.price as product_price`
+        ])
+        .leftJoin('ice', 'p', 's.product_id = p.id')
+        .where({ car_id: car_id })
+        .getRawMany()
+      return product
+    } catch (error) {
+      throw new Error(error.message)
+    }
   }
 }

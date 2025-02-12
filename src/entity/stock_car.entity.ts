@@ -1,13 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, OneToMany, JoinColumn, Unique } from "typeorm";
 import { WithdrawDetail } from "./withdraw_detail.entity";
+import { Product } from "./product.entity";
 
 @Entity({ name: 'stock_in_car' })
+@Unique(['car_id', 'product_id'])
 export class StockCar {
     @PrimaryGeneratedColumn()
     id: number;
-
-    @Column()
-    withdraw_detail_id: number;
 
     @Column()
     product_id: number;
@@ -18,6 +17,10 @@ export class StockCar {
     @Column()
     car_id: number
 
-    @OneToOne(() => WithdrawDetail, withdrawDetail => withdrawDetail.stock_car)
-    withdraw_detail: WithdrawDetail
+    @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+    createAt: Date
+
+    @OneToMany(() => Product, product => product.stock_car)
+    @JoinColumn({ name: "product_id" })
+    product: Product[]
 }

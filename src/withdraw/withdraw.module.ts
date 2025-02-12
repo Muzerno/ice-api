@@ -9,10 +9,11 @@ import { OrderCustomer } from 'src/entity/order_customer.entity';
 import { OrderCustomerDetail } from 'src/entity/order_customer_detail.entity';
 import { DropOffPoint } from 'src/entity/drop_off_point.entity';
 import { Line } from 'src/entity/transportation.entity';
+import { StockCar } from 'src/entity/stock_car.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([
-    Withdraw, WithdrawDetail, Product, OrderCustomer, Line,
+    Withdraw, WithdrawDetail, Product, OrderCustomer, Line, StockCar,
     OrderCustomerDetail, DropOffPoint])],
   controllers: [WithdrawController],
   providers: [WithdrawService],

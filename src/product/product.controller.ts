@@ -37,7 +37,7 @@ export class ProductController {
     return await this.productService.remove(id);
   }
 
-  @Get(`/product-in-car/:id`)
+  @Get(`/stock/:id`)
   async findAllProductInCar(@Param('id') id: number) {
     return await this.productService.findAllProductInCar(id);
   }

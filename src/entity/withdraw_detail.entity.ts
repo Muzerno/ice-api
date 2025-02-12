@@ -27,6 +27,4 @@ export class WithdrawDetail extends FactoryTemplate {
     @JoinColumn({ name: "ice_id" })
     product: Product
 
-    @OneToOne(() => StockCar, stockCar => stockCar.withdraw_detail)
-    stock_car: StockCar
 }

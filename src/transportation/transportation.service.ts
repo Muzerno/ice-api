@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { ICreateCar, ICreateLine } from './validator/validator';
 import { DropOffPoint } from 'src/entity/drop_off_point.entity';
 import { format } from 'date-fns';
+import { StockCar } from 'src/entity/stock_car.entity';
 
 
 @Injectable()
@@ -18,7 +19,10 @@ export class TransportationService {
         private LineRepository: Repository<Line>,
 
         @InjectRepository(DropOffPoint)
-        private dropOffPointRepository: Repository<DropOffPoint>
+        private dropOffPointRepository: Repository<DropOffPoint>,
+
+        @InjectRepository(StockCar)
+        private stockCarRepository: Repository<StockCar>
     ) { }
 
     async createCar(body: ICreateCar) {
@@ -121,16 +125,15 @@ export class TransportationService {
 
     async getLineByCarId(carId: number, date: string) {
         try {
+
             const drop_off_points = await this.dropOffPointRepository.createQueryBuilder('d')
                 .where({ car_id: carId })
-                .andWhere('d.createAt <= :date', { date: `${date} 23:59:59` })
+                .andWhere(`d.createAt BETWEEN :startDay AND :endDay`, { startDay: `${date} 00:00:00`, endDay: `${date} 23:59:59` })
                 .leftJoinAndSelect('d.line', 'line')
                 .leftJoinAndSelect('d.customer', 'customer')
                 .leftJoinAndSelect('d.customer_order', 'customer_order')
                 .orderBy('d.createAt', 'DESC')
                 .getMany();
-
-            console.log(drop_off_points)
             const drop_dayly: any = []
             const drop_order: any = []
             drop_off_points.map((item) => {
@@ -193,8 +196,27 @@ export class TransportationService {
             throw new Error(error.message)
         }
     }
-    async updateDeliveryStatus(id: number, body: { status: string }) {
+    async updateDeliveryStatus(id: number, body: { products: [], product_amount: object, status: string }) {
         try {
+
+            if (body.products) {
+                for (const stockId of body.products) {
+                    const amount = body.product_amount[stockId];
+                    if (!amount) {
+                        continue; // Skip if no amount is provided for the product
+                    }
+
+                    const checkProduct = await this.stockCarRepository.findOne({ where: { id: stockId } });
+                    if (!checkProduct) return { success: false, message: `Product with id ${stockId} not found` };
+                    if (checkProduct.amount < amount) return { success: false, message: `Product amount not enough for product id ${stockId}` };
+
+
+                    console.log(checkProduct)
+                    checkProduct.amount -= amount
+                    await this.stockCarRepository.save(checkProduct)
+
+                }
+            }
             const drop_off_point = await this.dropOffPointRepository.findOne({ where: { id: id } });
             if (!drop_off_point) {
                 throw new Error('Delivery not found');

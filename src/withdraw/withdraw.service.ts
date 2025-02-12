@@ -11,6 +11,7 @@ import { OrderCustomerDetail } from 'src/entity/order_customer_detail.entity';
 import { DropOffPoint } from 'src/entity/drop_off_point.entity';
 import { Transportation_Car } from 'src/entity/transport_car.entity';
 import { Line } from 'src/entity/transportation.entity';
+import { StockCar } from 'src/entity/stock_car.entity';
 
 
 
@@ -38,6 +39,9 @@ export class WithdrawService {
 
         @InjectRepository(Line)
         private readonly LineRepository: Repository<Line>,
+
+        @InjectRepository(StockCar)
+        private readonly stockCarRepository: Repository<StockCar>
     ) { }
 
     async createWithdraw(withdrawData: IReqCreateWithdraw) {
@@ -88,6 +92,7 @@ export class WithdrawService {
                         // Update existing record
                         existingWithdrawDetail.amount += amount;
                         await this.withdrawDetailRepository.save(existingWithdrawDetail);
+
                     } else {
                         // Insert new record
                         const withdrawDetail = new WithdrawDetail();
@@ -96,6 +101,7 @@ export class WithdrawService {
                         withdrawDetail.withdraw_id = savedWithdraw.id;
                         withdrawDetail.date_time = today;
                         await this.withdrawDetailRepository.save(withdrawDetail);
+
                     }
                 } else {
                     // Insert new record
@@ -105,7 +111,21 @@ export class WithdrawService {
                     withdrawDetail.withdraw_id = savedWithdraw.id;
                     withdrawDetail.date_time = today;
                     await this.withdrawDetailRepository.save(withdrawDetail);
+
+
                 }
+                const findStockCar = await this.stockCarRepository.findOne({ where: { product_id: productId, car_id: withdrawData.car_id } });
+                if (findStockCar) {
+                    findStockCar.amount += amount;
+                    await this.stockCarRepository.save(findStockCar);
+                } else {
+                    const stockCar = new StockCar();
+                    stockCar.product_id = productId;
+                    stockCar.amount = amount;
+                    stockCar.car_id = withdrawData.car_id;
+                    await this.stockCarRepository.save(stockCar);
+                }
+
                 checkProduct.amount -= amount;
                 await this.productRepository.save(checkProduct);
             }
