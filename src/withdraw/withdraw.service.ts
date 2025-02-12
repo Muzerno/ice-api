@@ -190,7 +190,6 @@ export class WithdrawService {
             if (!savedOrderVip) {
                 throw new Error('Failed to save orderVip');
             }
-
             for (const productId of body.product_id) {
                 const amount = body.amount[productId];
                 if (!amount) {
@@ -205,23 +204,21 @@ export class WithdrawService {
                 orderVipDetail.order_customer_id = savedOrderVip.id;
                 await this.orderCustomerDetailRepository.save(orderVipDetail);
 
-                const dropOffPoint = new DropOffPoint();
-                dropOffPoint.status = "active"; // Default status, adjust as needed
-                dropOffPoint.drop_status = "inprogress";
-                dropOffPoint.latitude = body.latitude;
-                dropOffPoint.longitude = body.longitude;
-                dropOffPoint.drop_type = "order";
-                dropOffPoint.car_id = body.car_id;
-                dropOffPoint.customer_order_id = savedOrderVip.id;
-                await this.dropOffPointRepository.save(dropOffPoint);
-
-
                 const product = await this.productRepository.findOne({ where: { id: productId } });
                 if (product) {
                     product.amount -= amount;
                     await this.productRepository.save(product);
                 }
             }
+            const dropOffPoint = new DropOffPoint();
+            dropOffPoint.status = "active"; // Default status, adjust as needed
+            dropOffPoint.drop_status = "inprogress";
+            dropOffPoint.latitude = body.latitude;
+            dropOffPoint.longitude = body.longitude;
+            dropOffPoint.drop_type = "order";
+            dropOffPoint.car_id = body.car_id;
+            dropOffPoint.customer_order_id = savedOrderVip.id;
+            await this.dropOffPointRepository.save(dropOffPoint);
 
             return { success: true, message: "Order VIP created successfully" };
         } catch (error) {
