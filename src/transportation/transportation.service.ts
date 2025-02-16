@@ -7,6 +7,10 @@ import { ICreateCar, ICreateLine } from './validator/validator';
 import { DropOffPoint } from 'src/entity/drop_off_point.entity';
 import { format } from 'date-fns';
 import { StockCar } from 'src/entity/stock_car.entity';
+import { Delivery } from 'src/entity/delivery.entity';
+import { DeliveryDetail } from 'src/entity/delivery_detail.entity';
+import { Product } from 'src/entity/product.entity';
+import { Money } from 'src/entity/money.entity';
 
 
 @Injectable()
@@ -22,7 +26,19 @@ export class TransportationService {
         private dropOffPointRepository: Repository<DropOffPoint>,
 
         @InjectRepository(StockCar)
-        private stockCarRepository: Repository<StockCar>
+        private stockCarRepository: Repository<StockCar>,
+
+        @InjectRepository(Delivery)
+        private deliveryRepository: Repository<Delivery>,
+
+        @InjectRepository(DeliveryDetail)
+        private deliveryDetailRepository: Repository<DeliveryDetail>,
+
+        @InjectRepository(Product)
+        private productRepository: Repository<Product>,
+
+        @InjectRepository(Money)
+        private moneyRepository: Repository<Money>
     ) { }
 
     async createCar(body: ICreateCar) {
@@ -132,6 +148,8 @@ export class TransportationService {
                 .leftJoinAndSelect('d.line', 'line')
                 .leftJoinAndSelect('d.customer', 'customer')
                 .leftJoinAndSelect('d.customer_order', 'customer_order')
+                .leftJoinAndSelect('customer_order.order_customer_details', 'order_customer_detail')
+                .leftJoinAndSelect('order_customer_detail.product', 'product')
                 .orderBy('d.createAt', 'DESC')
                 .getMany();
             const drop_dayly: any = []
@@ -196,10 +214,18 @@ export class TransportationService {
             throw new Error(error.message)
         }
     }
-    async updateDeliveryStatus(id: number, body: { products: [], product_amount: object, status: string }) {
+    async updateDeliveryStatus(id: number, body: { products: [], product_amount: object, car_id: number, status: string }) {
         try {
-
             if (body.products) {
+                const delivery = await this.deliveryRepository.createQueryBuilder('delivery').insert().values({
+                    date_time: new Date(),
+                    delivery_status: body.status,
+                    status: "active",
+                    car_id: body.car_id,
+
+                }).execute();
+                const deliveryDetailArray = []
+                let priceAmount = 0
                 for (const stockId of body.products) {
                     const amount = body.product_amount[stockId];
                     if (!amount) {
@@ -207,15 +233,43 @@ export class TransportationService {
                     }
 
                     const checkProduct = await this.stockCarRepository.findOne({ where: { id: stockId } });
+                    const findProduct = await this.productRepository.findOne({ where: { id: stockId } });
                     if (!checkProduct) return { success: false, message: `Product with id ${stockId} not found` };
                     if (checkProduct.amount < amount) return { success: false, message: `Product amount not enough for product id ${stockId}` };
 
+                    deliveryDetailArray.push({
+                        delivery_id: delivery.identifiers[0].id,
+                        stock_car_id: stockId,
+                        amount: amount,
+                        ice_id: checkProduct.product_id,
+                        drop_id: id,
+                        status: "active",
+                        price: findProduct.price
 
-                    console.log(checkProduct)
+                    })
+                    priceAmount += findProduct.price * amount
                     checkProduct.amount -= amount
                     await this.stockCarRepository.save(checkProduct)
 
                 }
+                // console.log(priceAmount)
+                if (body.status === "success") {
+                    await this.moneyRepository.createQueryBuilder('money')
+                        .insert()
+                        .into(Money)
+                        .values({
+                            date_time: new Date(),
+                            delevery_id: delivery.identifiers[0].id,
+                            status: "active",
+                            amount: priceAmount
+                        }).execute()
+                }
+
+                await this.deliveryDetailRepository.createQueryBuilder('delivery_detail')
+                    .insert()
+                    .into(DeliveryDetail)
+                    .values(deliveryDetailArray)
+                    .execute();
             }
             const drop_off_point = await this.dropOffPointRepository.findOne({ where: { id: id } });
             if (!drop_off_point) {

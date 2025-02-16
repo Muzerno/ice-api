@@ -7,6 +7,7 @@ import { Loading } from "./loading.entity";
 import { Withdraw } from "./withdraw.entity";
 import { OrderCustomer } from "./order_customer.entity";
 import { DropOffPoint } from "./drop_off_point.entity";
+import { Delivery } from "./delivery.entity";
 
 @Entity({ name: "car" })
 export class Transportation_Car extends FactoryTemplate {
@@ -38,4 +39,7 @@ export class Transportation_Car extends FactoryTemplate {
 
     @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.car)
     dropOffPoints: DropOffPoint[]
+
+    @OneToMany(() => Delivery, delivery => delivery.car)
+    deliveries: Delivery[]
 }

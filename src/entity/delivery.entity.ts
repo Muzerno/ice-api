@@ -1,7 +1,8 @@
-import { Column, Entity, OneToMany, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { FactoryTemplate } from "./factory.template";
 import { DeliveryDetail } from "./delivery_detail.entity";
 import { Money } from "./money.entity";
+import { Transportation_Car } from "./transport_car.entity";
 
 @Entity()
 export class Delivery extends FactoryTemplate {
@@ -10,10 +11,7 @@ export class Delivery extends FactoryTemplate {
     date_time: Date
 
     @Column()
-    delivery_status: boolean
-
-    @Column()
-    user_id: number
+    delivery_status: string
 
     @Column()
     car_id: number
@@ -23,4 +21,8 @@ export class Delivery extends FactoryTemplate {
 
     @OneToOne(() => Money, money => money.delivery)
     money: Money
+
+    @ManyToOne(() => Transportation_Car, car => car.deliveries)
+    @JoinColumn({ name: "car_id" })
+    car: Transportation_Car
 }

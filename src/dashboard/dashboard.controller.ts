@@ -13,4 +13,10 @@ export class DashboardController {
     const dashboard = await this.dashboardService.getDashboard();
     return dashboard
   }
+
+  @Get('/money')
+  async getMoney() {
+    const res = await this.dashboardService.getMoney();
+    return res
+  }
 }
