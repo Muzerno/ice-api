@@ -16,7 +16,10 @@ export class Transportation_Car extends FactoryTemplate {
     car_number: string
 
     @Column({ nullable: true })
-    key_api: string
+    latitude: string
+
+    @Column({ nullable: true })
+    longitude: string
 
     @Column()
     user_id: number

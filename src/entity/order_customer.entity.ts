@@ -14,10 +14,10 @@ export class OrderCustomer extends FactoryTemplate {
     @Column({ length: 10 })
     telephone: string
 
-    @Column({ length: 50 })
+    @Column()
     latitude: string
 
-    @Column({ length: 50 })
+    @Column()
     longitude: string
 
     @Column({ type: "text" })

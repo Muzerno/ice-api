@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
@@ -17,6 +17,18 @@ export class DashboardController {
   @Get('/money')
   async getMoney() {
     const res = await this.dashboardService.getMoney();
+    return res
+  }
+
+  @Patch('/location/:car_id')
+  async updateLocation(@Param('car_id') car_id: number, @Body() body: { latitude: string, longitude: string }) {
+    const res = await this.dashboardService.updateLocation(car_id, body);
+    return res
+  }
+
+  @Get('/car/location')
+  async getCarLocation() {
+    const res = await this.dashboardService.getCarLocation();
     return res
   }
 }

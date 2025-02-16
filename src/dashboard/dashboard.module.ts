@@ -13,9 +13,11 @@ import { DeliveryDetail } from 'src/entity/delivery_detail.entity';
 import { DropOffPoint } from 'src/entity/drop_off_point.entity';
 import { Withdraw } from 'src/entity/withdraw.entity';
 import { Line } from 'src/entity/transportation.entity';
+import { Transportation_Car } from 'src/entity/transport_car.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Product, Customer, Delivery, Money, Manufacture, Line, ManufactureDetail, Delivery, DeliveryDetail, DropOffPoint, Withdraw])],
+  imports: [TypeOrmModule.forFeature([User, Product, Customer, Delivery,
+    Money, Manufacture, Line, ManufactureDetail, Delivery, DeliveryDetail, DropOffPoint, Withdraw, Line, Transportation_Car])],
   controllers: [DashboardController],
   providers: [DashboardService],
 })

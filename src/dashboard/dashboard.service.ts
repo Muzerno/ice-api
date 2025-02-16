@@ -8,6 +8,7 @@ import { Manufacture } from 'src/entity/manufacture.entit.entity';
 import { ManufactureDetail } from 'src/entity/manufacture_detail.entity';
 import { Money } from 'src/entity/money.entity';
 import { Product } from 'src/entity/product.entity';
+import { Transportation_Car } from 'src/entity/transport_car.entity';
 import { Line } from 'src/entity/transportation.entity';
 import { User } from 'src/entity/user.entity';
 import { Withdraw } from 'src/entity/withdraw.entity';
@@ -46,6 +47,9 @@ export class DashboardService {
 
         @InjectRepository(Line)
         private readonly lineRepository: Repository<Line>,
+
+        @InjectRepository(Transportation_Car)
+        private readonly transportationRepository: Repository<Transportation_Car>,
 
 
     ) { }
@@ -129,5 +133,17 @@ export class DashboardService {
         const result = await Promise.all(res);
 
         return result;
+    }
+
+    async updateLocation(carId: number, location: { latitude: string, longitude: string }) {
+        return this.transportationRepository.update(carId, {
+            latitude: location.latitude,
+            longitude: location.longitude
+        })
+    }
+
+    async getCarLocation() {
+        const res = await this.transportationRepository.find({ where: { status: "active" } })
+        return res
     }
 }
