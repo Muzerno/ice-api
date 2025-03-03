@@ -154,8 +154,13 @@ export class WithdrawService {
             throw new Error(error.message);
         }
     }
-    async findAllWithdraws(): Promise<Withdraw[]> {
-        return this.withdrawRepository.find({ relations: ["user", "withdraw_details", "withdraw_details.product", "line"], order: { id: "DESC" } });
+    async findAllWithdraws(date: string): Promise<Withdraw[]> {
+        console.log(date)
+        const res = await this.withdrawRepository.find({
+            relations: ["user", "withdraw_details", "withdraw_details.product", "line"],
+            where: { to_day: date }, order: { id: "DESC" }
+        });
+        return res;
     }
 
     async findAllOrdeVip(): Promise<OrderCustomer[]> {
@@ -185,6 +190,7 @@ export class WithdrawService {
             orderVip.latitude = body.latitude;
             orderVip.longitude = body.longitude;
             orderVip.address = body.address;
+            orderVip.customer_code = body.customer_code;
             const savedOrderVip = await this.orderCustomerRepository.save(orderVip);
 
             if (!savedOrderVip) {

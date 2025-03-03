@@ -149,6 +149,8 @@ export class TransportationService {
                 .leftJoinAndSelect('d.customer_order', 'customer_order')
                 .leftJoinAndSelect('customer_order.order_customer_details', 'order_customer_detail')
                 .leftJoinAndSelect('order_customer_detail.product', 'product')
+                .leftJoinAndSelect('d.delivery_details', 'delivery_detail')
+                .leftJoinAndSelect('delivery_detail.product', 'product_detail')
                 .orderBy('d.createAt', 'DESC')
                 .getMany();
             const drop_dayly: any = []

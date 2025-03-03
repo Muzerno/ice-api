@@ -86,8 +86,11 @@ export class UserService {
 
   async getUserByUsername(username: string) {
     try {
-      const user = await this.UserRepository.findOne({ where: { username: username }, relations: ["role", "transportation_car"] })
-      return user
+      if (username) {
+        const user = await this.UserRepository.findOne({ where: { username: username }, relations: ["role", "transportation_car"] })
+        return user
+      }
+      return null
     } catch (error) {
       throw new Error(error.message)
     }

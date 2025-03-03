@@ -8,6 +8,9 @@ import { OrderCustomerDetail } from "./order_customer_detail.entity";
 @Entity()
 export class OrderCustomer extends FactoryTemplate {
 
+    @Column()
+    customer_code: string
+
     @Column({ length: 50 })
     name: string
 

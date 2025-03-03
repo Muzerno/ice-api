@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { WithdrawService } from './withdraw.service';
 import { ICreateOrderVip, IReqCreateWithdraw } from './validator/validator';
 
@@ -8,8 +8,8 @@ export class WithdrawController {
   }
 
   @Get()
-  async findAll() {
-    const withdraws = await this.withdrawService.findAllWithdraws();
+  async findAll(@Query('date') date: string) {
+    const withdraws = await this.withdrawService.findAllWithdraws(date);
     return {
       success: true,
       data: withdraws

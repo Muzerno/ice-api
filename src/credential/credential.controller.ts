@@ -15,6 +15,7 @@ export class CredentialController {
       credentials.username,
       credentials.password,
     );
+    console.log(user)
     if (!user) {
       res.status(HttpStatus.NO_CONTENT)
       res.json({ success: false, error: 'Invalid credentials' });

@@ -1,9 +1,10 @@
-import { Column, Entity, Generated, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { FactoryTemplate } from "./factory.template";
 import { Customer } from "./customer.entity";
 import { OrderCustomer } from "./order_customer.entity";
 import { Line } from "./transportation.entity";
 import { Transportation_Car } from "./transport_car.entity";
+import { DeliveryDetail } from "./delivery_detail.entity";
 
 @Entity({ name: "drop_off_point" })
 export class DropOffPoint extends FactoryTemplate {
@@ -57,4 +58,7 @@ export class DropOffPoint extends FactoryTemplate {
     @ManyToOne(() => OrderCustomer, orderCustomer => orderCustomer.dropOffPoints, { onDelete: "CASCADE", onUpdate: "CASCADE" })
     @JoinColumn({ name: "customer_order_id" })
     customer_order: OrderCustomer
+
+    @OneToMany(() => DeliveryDetail, deliveryDetail => deliveryDetail.dropoffpoint)
+    delivery_details: DeliveryDetail[]
 }

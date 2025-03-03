@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
@@ -15,8 +15,8 @@ export class DashboardController {
   }
 
   @Get('/money')
-  async getMoney() {
-    const res = await this.dashboardService.getMoney();
+  async getMoney(@Query('date_time') date_time: string) {
+    const res = await this.dashboardService.getMoney({ date_time });
     return res
   }
 
