@@ -1,17 +1,25 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Put, Query, Res } from '@nestjs/common';
 import { TransportationService } from './transportation.service';
 import { ICreateCar, ICreateLine } from './validator/validator';
 import { UUID } from 'crypto';
+import { Response } from 'express';
 
 @Controller('transportation')
 export class TransportationController {
   constructor(private readonly transportationService: TransportationService) { }
   @Post('car')
-  async createCar(@Body() body: ICreateCar) {
+  async createCar(@Body() body: ICreateCar, @Res() res: Response) {
     try {
-      await this.transportationService.createCar(body);
-      return { success: true, message: 'Car created successfully' };
+      const result = await this.transportationService.createCar(body);
+      if (result.success === false) {
+        res.status(HttpStatus.NO_CONTENT)
+        res.json({ success: false, message: result.message });
+        return
+      }
+      res.status(HttpStatus.CREATED)
+      res.json({ success: true, message: 'Car created successfully' });
     } catch (error) {
+
       throw new Error(error.message);
     }
   }
@@ -44,10 +52,16 @@ export class TransportationController {
   }
 
   @Put('car/:id')
-  async updateCar(@Param('id') id: number, @Body() body: any) {
+  async updateCar(@Param('id') id: number, @Body() body: any, @Res() res: Response) {
     try {
-      await this.transportationService.updateCar(id, body);
-      return { message: 'Car updated successfully' };
+      const result = await this.transportationService.updateCar(id, body);
+      if (result.success === false) {
+        res.status(HttpStatus.NO_CONTENT)
+        res.json({ success: false, message: result.message });
+        return
+      }
+      res.status(HttpStatus.OK)
+      res.json({ success: true, message: 'Car updated successfully' });
     } catch (error) {
       throw new Error(error.message);
     }
@@ -64,8 +78,19 @@ export class TransportationController {
   }
 
   @Post()
-  async createLine(@Body() body: ICreateLine) {
-    return this.transportationService.createLine(body);
+  async createLine(@Body() body: ICreateLine, @Res() res: Response) {
+    try {
+      const result = await this.transportationService.createLine(body);
+      if (result?.success === false) {
+        res.status(HttpStatus.NO_CONTENT)
+        res.json({ success: false, message: result.message });
+        return
+      }
+      res.status(HttpStatus.OK)
+      res.json(result);
+    } catch (error) {
+      throw new Error(error.message);
+    }
   }
 
   @Get()

@@ -43,10 +43,23 @@ export class TransportationService {
 
     async createCar(body: ICreateCar) {
         try {
-            await this.transportationRepository.createQueryBuilder('transportation_car').insert().values({
-                car_number: body.car_number,
-                user_id: body.user_id
-            }).execute();
+
+            const checkCar = await this.transportationRepository.findOne({ where: { car_number: body.car_number } });
+            if (checkCar) {
+                return { success: false, message: 'Car already exist' }
+            }
+            const checkDriver = await this.transportationRepository.findOne({ where: { user_id: body.user_id } });
+            if (checkDriver) {
+                return { success: false, message: 'Driver already exist' }
+            }
+            console.log(checkCar, checkDriver)
+            if (!checkCar && !checkDriver) {
+                await this.transportationRepository.createQueryBuilder('transportation_car').insert().values({
+                    car_number: body.car_number,
+                    user_id: body.user_id
+                }).execute();
+                return { success: true, message: 'Car created successfully' }
+            }
         } catch (error) {
             throw new Error(error.message)
         }
@@ -72,8 +85,20 @@ export class TransportationService {
 
     async updateCar(id: number, body) {
         try {
-            await this.transportationRepository.createQueryBuilder('transportation_car').update()
-                .set({ car_number: body.car_number, user_id: body.user_id }).where({ id: id }).execute();
+            const checkCar = await this.transportationRepository.findOne({ where: { car_number: body.car_number } });
+            if (checkCar) {
+                return { success: false, message: 'Car already exist' }
+            }
+            const checkDriver = await this.transportationRepository.findOne({ where: { user_id: body.user_id } });
+            if (checkDriver) {
+                return { success: false, message: 'Driver already exist' }
+            }
+            if (!checkCar && !checkDriver) {
+                await this.transportationRepository.createQueryBuilder('transportation_car').update()
+                    .set({ car_number: body.car_number, user_id: body.user_id }).where({ id: id }).execute();
+                return { success: true, message: 'Car updated successfully' }
+            }
+
         } catch (error) {
             throw new Error(error.message)
         }
@@ -89,23 +114,29 @@ export class TransportationService {
 
     async createLine(body: ICreateLine) {
         try {
-            const TsLine = []
-            const dropOff = []
-            for (const item of body.customer_id) {
+            const existingLineName = await this.LineRepository.findOne({ where: { line_name: body.line_name, car_id: body.car_id } });
+            if (existingLineName) {
+                return { success: false, message: 'Line name already exists for this car' };
+            } else {
+                const TsLine = []
+                const dropOff = []
+                for (const item of body.customer_id) {
 
-                TsLine.push({
-                    line_name: body.line_name,
-                    car_id: body.car_id,
-                    customer_id: item
-                })
+                    TsLine.push({
+                        line_name: body.line_name,
+                        car_id: body.car_id,
+                        customer_id: item
+                    })
 
+                }
+                const result = await this.LineRepository.createQueryBuilder('Line')
+                    .insert()
+                    .values(TsLine)
+                    .execute();
+
+                return { success: true, message: 'Line created successfully' }
             }
-            const result = await this.LineRepository.createQueryBuilder('Line')
-                .insert()
-                .values(TsLine)
-                .execute();
 
-            return result
         } catch (error) {
             throw new Error(error.message)
         }
