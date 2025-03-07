@@ -14,7 +14,8 @@ import { Line } from 'src/entity/transportation.entity';
 import { User } from 'src/entity/user.entity';
 import { Withdraw } from 'src/entity/withdraw.entity';
 import { TransportationService } from 'src/transportation/transportation.service';
-import { ILike, Repository } from 'typeorm';
+import { Between, ILike, Repository } from 'typeorm';
+import { ExportRequest } from './interface/dashboard.interface';
 
 @Injectable()
 export class DashboardService {
@@ -154,5 +155,33 @@ export class DashboardService {
     async getCarLocation() {
         const res = await this.transportationRepository.find({ where: { status: "active" } })
         return res
+    }
+
+    async export(body: ExportRequest) {
+        if (body.type === 'manufacture') {
+            const res = await this.manufactureDetailRepository.createQueryBuilder('manufacture_detail')
+                .where('manufacture_detail.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
+                .leftJoinAndSelect('manufacture_detail.products', 'products')
+                .getMany();
+            return res
+        }
+        if (body.type === 'withdraw') {
+            const res = await this.withdrawRepository.createQueryBuilder('withdraw')
+                .where('withdraw.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
+                .leftJoinAndSelect('withdraw.withdraw_details', 'withdraw_details')
+                .leftJoinAndSelect('withdraw.transportation_car', 'car')
+                .leftJoinAndSelect('car.Lines', 'line')
+                .leftJoinAndSelect('withdraw_details.product', 'product')
+                .getMany();
+            return res
+        } if (body.type === 'money') {
+            const res = await this.moneyRepository.createQueryBuilder('money')
+                .where('money.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
+                .leftJoinAndSelect('money.delivery', 'delivery')
+                .leftJoinAndSelect('delivery.car', 'car')
+                .leftJoinAndSelect('car.Lines', 'line')
+                .getMany();
+            return res
+        }
     }
 }

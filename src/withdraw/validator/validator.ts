@@ -13,7 +13,5 @@ export interface ICreateOrderVip {
     latitude: string
     longitude: string
     address: string
-    product_id: number[]
-    amount: object
     customer_code: string
 }

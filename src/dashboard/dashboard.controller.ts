@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
+import { ExportRequest } from './interface/dashboard.interface';
 
 @Controller('dashboard')
 export class DashboardController {
@@ -30,5 +31,24 @@ export class DashboardController {
   async getCarLocation() {
     const res = await this.dashboardService.getCarLocation();
     return res
+  }
+
+  @Patch('/export')
+  async export(@Body() body: ExportRequest) {
+    try {
+      if (!body.type) {
+        return { error: 'Type is required' }
+      }
+      if (!body.date_from) {
+        return { error: 'Date from is required' }
+      }
+      if (!body.date_to) {
+        return { error: 'Date to is required' }
+      }
+      const res = await this.dashboardService.export(body);
+      return res
+    } catch (error) {
+      return { error: error.message }
+    }
   }
 }

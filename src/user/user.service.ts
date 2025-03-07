@@ -16,19 +16,25 @@ export class UserService {
 
   async createUser(body: ICreateUser) {
     try {
-      await this.UserRepository.createQueryBuilder('user')
-        .insert()
-        .values({
-          username: body.username,
-          password: body.password ?? "123456",
-          telephone: body.telephone,
-          firstname: body.firstname,
-          lastname: body.lastname,
-          role: { id: body.role_id },
-          address: body.address
-        })
-        .execute()
-      return;
+
+      const user = await this.UserRepository.findOne({ where: { username: body.username } })
+      if (user) {
+        return { success: false, message: "Username is already exist" }
+      } else {
+        await this.UserRepository.createQueryBuilder('user')
+          .insert()
+          .values({
+            username: body.username,
+            password: body.password ?? "123456",
+            telephone: body.telephone,
+            firstname: body.firstname,
+            lastname: body.lastname,
+            role: { id: body.role_id },
+            address: body.address
+          })
+          .execute()
+      }
+      return { success: true, message: "User created successfully" };
     } catch (error) {
       throw new Error(error.message)
     }
@@ -44,21 +50,28 @@ export class UserService {
 
   async updateUser(id: number, body: IUpdateUser) {
     try {
-      await this.UserRepository.createQueryBuilder('user')
-        .update()
-        .set({
-          username: body.username,
-          password: body.password,
-          telephone: body.telephone,
-          firstname: body.firstname,
-          lastname: body.lastname,
-          role: { id: body.role_id }
-        })
-        .where({
-          id: id
-        })
-        .execute()
-      return;
+
+      const user = await this.UserRepository.findOne({ where: { username: body.username } })
+
+      if (user) {
+        return { success: false, message: "Username is already exist" }
+      } else {
+        await this.UserRepository.createQueryBuilder('user')
+          .update()
+          .set({
+            username: body.username,
+            password: body.password,
+            telephone: body.telephone,
+            firstname: body.firstname,
+            lastname: body.lastname,
+            role: { id: body.role_id }
+          })
+          .where({
+            id: id
+          })
+          .execute()
+        return { success: true, message: "User updated successfully" };
+      }
     } catch (error) {
       throw new Error(error.message)
     }

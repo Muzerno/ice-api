@@ -1,7 +1,8 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
 
 import { UserService } from './user.service';
 import { IUpdateUser, ReqCreateUser } from './validator/validator';
+import { Response } from 'express';
 
 
 @Controller('user')
@@ -31,31 +32,45 @@ export class UserController {
   }
 
   @Post()
-  async createUser(@Body() body: ReqCreateUser) {
+  async createUser(@Body() body: ReqCreateUser, @Res() res: Response) {
     try {
-      await this.userService.createUser(body)
-      return {
-        success: true, message: "Create User Success"
+      const user = await this.userService.createUser(body)
+      if (user.success === true) {
+        res.status(HttpStatus.OK).json({
+          success: true, message: "Create User Success"
+        })
+      } else {
+        res.status(HttpStatus.NO_CONTENT).json({
+          success: false, message: "Create User Failed"
+        })
       }
     } catch (error) {
-      return {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false, message: "Create User Failed", stack: error.stack
-      }
+      })
     }
   }
 
 
   @Put('/:id')
-  async updateUser(@Param('id') id, @Body() body: IUpdateUser) {
+  async updateUser(@Param('id') id, @Body() body: IUpdateUser, @Res() res: Response) {
     try {
-      await this.userService.updateUser(id, body)
-      return {
-        success: true, message: "Update User Success"
+      const user = await this.userService.updateUser(id, body)
+      if (user.success === true) {
+        res.status(HttpStatus.OK).json({
+          success: true, message: "Update User Success"
+        })
+        return;
+      } else {
+        res.status(HttpStatus.NO_CONTENT).json({
+          success: false, message: "Update User Failed"
+        })
+        return;
       }
     } catch (error) {
-      return {
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false, message: "Update User Failed", stack: error.stack
-      }
+      })
     }
   }
 

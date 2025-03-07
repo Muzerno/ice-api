@@ -196,26 +196,6 @@ export class WithdrawService {
             if (!savedOrderVip) {
                 throw new Error('Failed to save orderVip');
             }
-            for (const productId of body.product_id) {
-                const amount = body.amount[productId];
-                if (!amount) {
-                    continue; // Skip if no amount is provided for the product
-                }
-                const checkProduct = await this.productRepository.findOne({ where: { id: productId } });
-                if (!checkProduct) return { success: false, message: `Product with id ${productId} not found` };
-                if (checkProduct.amount < amount) return { success: false, message: `Product amount not enough for product id ${productId}` };
-                const orderVipDetail = new OrderCustomerDetail();
-                orderVipDetail.amount = amount;
-                orderVipDetail.product_id = productId;
-                orderVipDetail.order_customer_id = savedOrderVip.id;
-                await this.orderCustomerDetailRepository.save(orderVipDetail);
-
-                const product = await this.productRepository.findOne({ where: { id: productId } });
-                if (product) {
-                    product.amount -= amount;
-                    await this.productRepository.save(product);
-                }
-            }
             const dropOffPoint = new DropOffPoint();
             dropOffPoint.status = "active"; // Default status, adjust as needed
             dropOffPoint.drop_status = "inprogress";
@@ -225,7 +205,6 @@ export class WithdrawService {
             dropOffPoint.car_id = body.car_id;
             dropOffPoint.customer_order_id = savedOrderVip.id;
             await this.dropOffPointRepository.save(dropOffPoint);
-
             return { success: true, message: "Order VIP created successfully" };
         } catch (error) {
             console.log(error);
