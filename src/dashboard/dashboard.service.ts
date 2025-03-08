@@ -180,6 +180,10 @@ export class DashboardService {
             const res = await this.moneyRepository.createQueryBuilder('money')
                 .where('money.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
                 .leftJoinAndSelect('money.delivery', 'delivery')
+                .leftJoinAndSelect('delivery.delivery_details', 'delivery_detail')
+                .leftJoinAndSelect('delivery_detail.dropoffpoint', 'dropoffpoint')
+                .leftJoinAndSelect('dropoffpoint.customer_order', 'customer_order')
+                .leftJoinAndSelect('dropoffpoint.customer', 'customer')
                 .leftJoinAndSelect('delivery.car', 'car')
                 .leftJoinAndSelect('car.Lines', 'line')
                 .getMany();
