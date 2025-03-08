@@ -106,22 +106,24 @@ export class DashboardService {
     }
 
     async getMoney(body: { date_time: string }) {
+        console.log(body)
         const moneyRes = await this.moneyRepository.createQueryBuilder('money')
             .leftJoin('delivery', 'd', 'd.id = money.delevery_id')
             .leftJoin('car', 'c', 'c.id = d.car_id')
             .select([
                 'DATE(money.date_time) as date_time',
+                'money.dateString as date_string',
                 'SUM(money.amount) as total',
                 'd.delivery_status as delivery_status',
                 'c.car_number as car_number',
                 'c.id as car_id'
             ])
-            .where(`money.date_time BETWEEN :startDay AND :endDay`, { startDay: `${body.date_time} 00:00:00`, endDay: `${body.date_time} 23:59:59` })
+            .where(`money.date_time >= :startDay AND money.date_time <= :endDay`, { startDay: body.date_time + " 00:00:00", endDay: body.date_time + " 23:59:59" })
             .addGroupBy('DATE(money.date_time)')
+            .addGroupBy('money.dateString')
             .addGroupBy('d.delivery_status')
             .addGroupBy('c.car_number')
             .addGroupBy('c.id')
-            .orderBy('date_time', 'DESC')
             .getRawMany();
         console.log(moneyRes)
         const res = await Promise.all(moneyRes.map(async (item) => {

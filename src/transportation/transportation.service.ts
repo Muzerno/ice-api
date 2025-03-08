@@ -291,6 +291,7 @@ export class TransportationService {
                         .into(Money)
                         .values({
                             date_time: new Date(),
+                            dateString: format(new Date(), 'yyyy-MM-dd'),
                             delevery_id: delivery.identifiers[0].id,
                             status: "active",
                             amount: priceAmount

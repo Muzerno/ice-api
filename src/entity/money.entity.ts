@@ -9,6 +9,9 @@ export class Money extends FactoryTemplate {
     date_time: Date
 
     @Column()
+    dateString: string
+
+    @Column()
     amount: number
 
     @Column()
