@@ -170,6 +170,7 @@ export class DashboardService {
         if (body.type === 'withdraw') {
             const res = await this.withdrawRepository.createQueryBuilder('withdraw')
                 .where('withdraw.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
+                .andWhere('withdraw.line_id = :lineId', { lineId: body.line })
                 .leftJoinAndSelect('withdraw.withdraw_details', 'withdraw_details')
                 .leftJoinAndSelect('withdraw.transportation_car', 'car')
                 .leftJoinAndSelect('car.Lines', 'line')
@@ -198,6 +199,7 @@ export class DashboardService {
             const Query = this.dropOffPointRepository.createQueryBuilder('dropoffpoint')
                 .where('dropoffpoint.createAt BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
                 .leftJoinAndSelect('dropoffpoint.line', 'line')
+                .leftJoinAndSelect('dropoffpoint.car', 'car')
                 .leftJoinAndSelect('dropoffpoint.customer', 'customer')
                 .leftJoinAndSelect('dropoffpoint.customer_order', 'customer_order')
 
