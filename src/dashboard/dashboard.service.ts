@@ -169,20 +169,29 @@ export class DashboardService {
         }
         if (body.type === 'withdraw') {
 
+            const findCar = await this.transportationRepository.createQueryBuilder('transportation')
+                .where('line.id = :carId', { carId: body.line })
+                .leftJoin('transportation.Lines', 'line', 'transportation.id = line.car_id')
+                .getOne();
             const Query = this.withdrawRepository.createQueryBuilder('withdraw')
-                .where('withdraw.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
                 .leftJoinAndSelect('withdraw.withdraw_details', 'withdraw_details')
                 .leftJoinAndSelect('withdraw.transportation_car', 'car')
                 .leftJoinAndSelect('car.Lines', 'line')
                 .leftJoinAndSelect('withdraw_details.product', 'product')
             if (body.line) {
-                Query.andWhere('withdraw.line_id = :lineId', { lineId: body.line })
+                Query.where('withdraw.car_id = :lineId', { lineId: findCar.id })
+                Query.andWhere('withdraw.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
+            } else {
+                Query.where('withdraw.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
             }
             const res = Query.getMany();
             return res
         } if (body.type === 'money') {
-            const res = await this.moneyRepository.createQueryBuilder('money')
-                .where('money.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
+            const findCar = await this.transportationRepository.createQueryBuilder('transportation')
+                .where('line.id = :carId', { carId: body.line })
+                .leftJoin('transportation.Lines', 'line', 'transportation.id = line.car_id')
+                .getOne();
+            const Query = this.moneyRepository.createQueryBuilder('money')
                 .leftJoinAndSelect('money.delivery', 'delivery')
                 .leftJoinAndSelect('delivery.delivery_details', 'delivery_detail')
                 .leftJoinAndSelect('delivery_detail.dropoffpoint', 'dropoffpoint')
@@ -190,7 +199,15 @@ export class DashboardService {
                 .leftJoinAndSelect('dropoffpoint.customer', 'customer')
                 .leftJoinAndSelect('delivery.car', 'car')
                 .leftJoinAndSelect('car.Lines', 'line')
-                .getMany();
+
+            if (body.line) {
+                Query.where('delivery.car_id = :lineId', { lineId: findCar.id })
+                Query.andWhere('money.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
+            } else {
+                Query.where('money.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
+            }
+
+            const res = await Query.getMany();
             return res
         }
         if (body.type === 'delivery') {
@@ -200,7 +217,7 @@ export class DashboardService {
                 .leftJoin('transportation.Lines', 'line', 'transportation.id = line.car_id')
                 .getOne();
 
-            console.log(findCar)
+
             const Query = this.dropOffPointRepository.createQueryBuilder('dropoffpoint')
                 .where('dropoffpoint.createAt BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
                 .leftJoinAndSelect('dropoffpoint.line', 'line')
