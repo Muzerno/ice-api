@@ -168,14 +168,17 @@ export class DashboardService {
             return res
         }
         if (body.type === 'withdraw') {
-            const res = await this.withdrawRepository.createQueryBuilder('withdraw')
+
+            const Query = this.withdrawRepository.createQueryBuilder('withdraw')
                 .where('withdraw.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
-                .andWhere('withdraw.line_id = :lineId', { lineId: body.line })
                 .leftJoinAndSelect('withdraw.withdraw_details', 'withdraw_details')
                 .leftJoinAndSelect('withdraw.transportation_car', 'car')
                 .leftJoinAndSelect('car.Lines', 'line')
                 .leftJoinAndSelect('withdraw_details.product', 'product')
-                .getMany();
+            if (body.line) {
+                Query.andWhere('withdraw.line_id = :lineId', { lineId: body.line })
+            }
+            const res = Query.getMany();
             return res
         } if (body.type === 'money') {
             const res = await this.moneyRepository.createQueryBuilder('money')
@@ -193,9 +196,11 @@ export class DashboardService {
         if (body.type === 'delivery') {
 
             const findCar = await this.transportationRepository.createQueryBuilder('transportation')
-                .where('transportation.id = :carId', { carId: body.line })
+                .where('line.id = :carId', { carId: body.line })
+                .leftJoin('transportation.Lines', 'line', 'transportation.id = line.car_id')
                 .getOne();
 
+            console.log(findCar)
             const Query = this.dropOffPointRepository.createQueryBuilder('dropoffpoint')
                 .where('dropoffpoint.createAt BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
                 .leftJoinAndSelect('dropoffpoint.line', 'line')
@@ -203,11 +208,14 @@ export class DashboardService {
                 .leftJoinAndSelect('dropoffpoint.customer', 'customer')
                 .leftJoinAndSelect('dropoffpoint.customer_order', 'customer_order')
 
-            if (findCar || body.line) {
-                Query.andWhere('dropoffpoint.line_id = :lineId', { lineId: body.line })
-                    .orWhere('dropoffpoint.car_id = :carId', { carId: findCar.id })
+            // if (body.line) {
+            //     Query.andWhere('dropoffpoint.line_id = :lineId', { lineId: body.line })
+
+            // }
+            if (findCar) {
+                Query.andWhere('dropoffpoint.car_id = :carId', { carId: findCar.id })
             }
-            const res = Query.getMany();
+            const res = await Query.getMany();
             return res
         }
     }

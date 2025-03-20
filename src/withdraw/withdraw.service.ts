@@ -41,7 +41,10 @@ export class WithdrawService {
         private readonly LineRepository: Repository<Line>,
 
         @InjectRepository(StockCar)
-        private readonly stockCarRepository: Repository<StockCar>
+        private readonly stockCarRepository: Repository<StockCar>,
+
+        @InjectRepository(Transportation_Car)
+        private readonly transportationRepository: Repository<Transportation_Car>
     ) { }
 
     async createWithdraw(withdrawData: IReqCreateWithdraw) {
@@ -130,7 +133,8 @@ export class WithdrawService {
                 await this.productRepository.save(checkProduct);
             }
             // Find Line by car_id
-            const line = await this.LineRepository.find({ where: { car_id: withdrawData.car_id }, relations: ["customer"] });
+            // const getCarAndLine = await this.transportationRepository.findOne({ where: { id: withdrawData.car_id }, relations: ["line"] });
+            const line = await this.LineRepository.find({ where: { car_id: withdrawData.car_id }, relations: ["customer"], });
             if (!line) {
                 return { success: false, message: `Line with car_id ${withdrawData.car_id} not found` };
             }
