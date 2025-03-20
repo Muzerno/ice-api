@@ -263,9 +263,8 @@ export class TransportationService {
                     if (!amount) {
                         continue; // Skip if no amount is provided for the product
                     }
-
                     const checkProduct = await this.stockCarRepository.findOne({ where: { id: stockId } });
-                    const findProduct = await this.productRepository.findOne({ where: { id: stockId } });
+                    const findProduct = await this.productRepository.findOne({ where: { id: checkProduct.product_id } });
                     if (!checkProduct) return { success: false, message: `Product with id ${stockId} not found` };
                     if (checkProduct.amount < amount) return { success: false, message: `Product amount not enough for product id ${stockId}` };
 

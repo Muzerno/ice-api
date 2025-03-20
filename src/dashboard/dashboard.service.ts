@@ -189,5 +189,24 @@ export class DashboardService {
                 .getMany();
             return res
         }
+        if (body.type === 'delivery') {
+
+            const findCar = await this.transportationRepository.createQueryBuilder('transportation')
+                .where('transportation.id = :carId', { carId: body.line })
+                .getOne();
+
+            const Query = this.dropOffPointRepository.createQueryBuilder('dropoffpoint')
+                .where('dropoffpoint.createAt BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
+                .leftJoinAndSelect('dropoffpoint.line', 'line')
+                .leftJoinAndSelect('dropoffpoint.customer', 'customer')
+                .leftJoinAndSelect('dropoffpoint.customer_order', 'customer_order')
+
+            if (findCar || body.line) {
+                Query.andWhere('dropoffpoint.line_id = :lineId', { lineId: body.line })
+                    .orWhere('dropoffpoint.car_id = :carId', { carId: findCar.id })
+            }
+            const res = Query.getMany();
+            return res
+        }
     }
 }
