@@ -173,6 +173,7 @@ export class DashboardService {
                 .where('line.id = :carId', { carId: body.line })
                 .leftJoin('transportation.Lines', 'line', 'transportation.id = line.car_id')
                 .getOne();
+
             const Query = this.withdrawRepository.createQueryBuilder('withdraw')
                 .leftJoinAndSelect('withdraw.withdraw_details', 'withdraw_details')
                 .leftJoinAndSelect('withdraw.transportation_car', 'car')
@@ -200,7 +201,7 @@ export class DashboardService {
                 .leftJoinAndSelect('delivery.car', 'car')
                 .leftJoinAndSelect('car.Lines', 'line')
 
-            if (body.line) {
+            if (findCar) {
                 Query.where('delivery.car_id = :lineId', { lineId: findCar.id })
                 Query.andWhere('money.date_time BETWEEN :startDay AND :endDay', { startDay: `${body.date_from} 00:00:00`, endDay: `${body.date_to} 23:59:59` })
             } else {
