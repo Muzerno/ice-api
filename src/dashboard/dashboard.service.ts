@@ -195,11 +195,13 @@ export class DashboardService {
             const Query = this.moneyRepository.createQueryBuilder('money')
                 .leftJoinAndSelect('money.delivery', 'delivery')
                 .leftJoinAndSelect('delivery.delivery_details', 'delivery_detail')
+                .leftJoinAndSelect('delivery_detail.product', 'product')
                 .leftJoinAndSelect('delivery_detail.dropoffpoint', 'dropoffpoint')
                 .leftJoinAndSelect('dropoffpoint.customer_order', 'customer_order')
                 .leftJoinAndSelect('dropoffpoint.customer', 'customer')
                 .leftJoinAndSelect('delivery.car', 'car')
                 .leftJoinAndSelect('car.Lines', 'line')
+
 
             if (findCar) {
                 Query.where('delivery.car_id = :lineId', { lineId: findCar.id })
