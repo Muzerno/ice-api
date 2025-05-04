@@ -25,6 +25,7 @@ export class CustomerController {
       data: customers
     }
   }
+  
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
