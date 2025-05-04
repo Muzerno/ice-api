@@ -16,11 +16,11 @@ export class Delivery extends FactoryTemplate {
     @Column()
     car_id: number
 
-    @OneToMany(() => DeliveryDetail, deliveryDetail => deliveryDetail.delivery)
-    delivery_details: DeliveryDetail[]
+    // @OneToMany(() => DeliveryDetail, deliveryDetail => deliveryDetail.delivery)
+    // delivery_details: DeliveryDetail[]
 
-    @OneToOne(() => Money, money => money.delivery)
-    money: Money
+    // @OneToOne(() => Money, money => money.delivery)
+    // money: Money
 
     @ManyToOne(() => Transportation_Car, car => car.deliveries)
     @JoinColumn({ name: "car_id" })

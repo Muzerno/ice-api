@@ -1,37 +1,48 @@
-import { Column, Entity, Generated, JoinColumn, ManyToOne, OneToMany } from "typeorm";
-import { FactoryTemplate } from "./factory.template";
-import { UUID } from "crypto";
-import { Transportation_Car } from "./transport_car.entity";
-import { Customer } from "./customer.entity";
-import { DropOffPoint } from "./drop_off_point.entity";
-import { Withdraw } from "./withdraw.entity";
+import {
+  Column,
+  Entity,
+  Generated,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+import { FactoryTemplate } from './factory.template';
+import { UUID } from 'crypto';
+import { Transportation_Car } from './transport_car.entity';
+import { Customer } from './customer.entity';
+import { DropOffPoint } from './drop_off_point.entity';
+import { Withdraw } from './withdraw.entity';
 
-@Entity({ name: "line" })
+@Entity({ name: 'line' })
 export class Line extends FactoryTemplate {
+  @Column()
+  customer_id: number;
 
-    @Column()
-    customer_id: number
+  @Generated('increment')
+  number: number;
 
-    @Generated("increment")
-    number: number
+  @Column()
+  line_name: string;
 
-    @Column()
-    line_name: string
+  @Column({ nullable: true })
+  car_id: number;
 
-    @Column({ nullable: true })
-    car_id: number
+  @ManyToOne(
+    () => Transportation_Car,
+    (transportation_car) => transportation_car.Lines,
+  )
+  @JoinColumn({ name: 'car_id' })
+  transportation_car: Transportation_Car;
 
-    @ManyToOne(() => Transportation_Car, transportation_car => transportation_car.Lines)
-    @JoinColumn({ name: "car_id" })
-    transportation_car: Transportation_Car
+  @ManyToOne(() => Customer, (customer) => customer.Lines)
+  @JoinColumn({ name: 'customer_id' })
+  customer: Customer;
 
-    @ManyToOne(() => Customer, customer => customer.Lines)
-    @JoinColumn({ name: "customer_id" })
-    customer: Customer
+  // @OneToMany(() => Withdraw, (withdraw) => withdraw.line)
+  // withdraws: Withdraw[];
 
-    @OneToMany(() => Withdraw, withdraw => withdraw.line)
-    withdraws: Withdraw[]
-
-    @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.line, { onDelete: "CASCADE" })
-    dropOffPoints: DropOffPoint[]
+  @OneToMany(() => DropOffPoint, (dropOffPoint) => dropOffPoint.line, {
+    onDelete: 'CASCADE',
+  })
+  dropOffPoints: DropOffPoint[];
 }

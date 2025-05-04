@@ -36,7 +36,7 @@ export class OrderCustomer extends FactoryTemplate {
     @JoinColumn({ name: "car_id" })
     transportation_car: Transportation_Car
 
-    @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.customer_order, { onDelete: "CASCADE", onUpdate: "CASCADE" })
-    dropOffPoints: DropOffPoint[]
+    // @OneToMany(() => DropOffPoint, dropOffPoint => dropOffPoint.customer_order, { onDelete: "CASCADE", onUpdate: "CASCADE" })
+    // dropOffPoints: DropOffPoint[]
 
 }

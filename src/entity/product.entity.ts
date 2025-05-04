@@ -19,9 +19,9 @@ export class Product extends FactoryTemplate {
     @Column()
     amount: number
 
-    @ManyToOne(() => Loading, loading => loading.products)
+    // @ManyToOne(() => Loading, loading => loading.products)
 
-    loading: Loading
+    // loading: Loading
 
     @OneToMany(() => ManufactureDetail, manufactureDetail => manufactureDetail.products)
     manufacture_detail: ManufactureDetail[]
@@ -29,11 +29,11 @@ export class Product extends FactoryTemplate {
     @OneToMany(() => WithdrawDetail, withdrawDetail => withdrawDetail.product)
     withdraw_details: WithdrawDetail[]
 
-    @ManyToOne(() => OrderCustomerDetail, orderCustomer => orderCustomer.product)
-    order_customer_details: OrderCustomer
+    // @ManyToOne(() => OrderCustomerDetail, orderCustomer => orderCustomer.product)
+    // order_customer_details: OrderCustomer
 
-    @ManyToOne(() => StockCar, stockCar => stockCar.product)
-    stock_car: StockCar
+    // @ManyToOne(() => StockCar, stockCar => stockCar.product)
+    // stock_car: StockCar
 
     @OneToMany(() => DeliveryDetail, deliveryDetail => deliveryDetail.product)
     delivery_details: DeliveryDetail[]
