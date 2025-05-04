@@ -1,40 +1,49 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
-import { FactoryTemplate } from "./factory.template";
-import { WithdrawDetail } from "./withdraw_detail.entity";
-import { Transportation_Car } from "./transport_car.entity";
-import { User } from "./user.entity";
-import { Line } from "./transportation.entity";
-
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
+import { FactoryTemplate } from './factory.template';
+import { WithdrawDetail } from './withdraw_detail.entity';
+import { Transportation_Car } from './transport_car.entity';
+import { User } from './user.entity';
+import { Line } from './transportation.entity';
 
 @Entity()
 export class Withdraw extends FactoryTemplate {
-    @Column()
-    date_time: Date
+  @Column()
+  date_time: Date;
 
-    @Column()
-    to_day: string
+  // @Column()
+  // to_day: string
 
-    @Column()
-    user_id: number
+  @Column()
+  user_id: number;
 
-    @Column()
-    car_id: number
+  @Column()
+  car_id: number;
 
-    @Column()
-    line_id: number
+  // @Column()
+  // line_id: number
 
-    @OneToMany(() => WithdrawDetail, withdrawDetail => withdrawDetail.withdraw)
-    withdraw_details: WithdrawDetail[]
+  @OneToMany(() => WithdrawDetail, (withdrawDetail) => withdrawDetail.withdraw)
+  withdraw_details: WithdrawDetail[];
 
-    @ManyToOne(() => Transportation_Car, transportation_car => transportation_car.withdraw)
-    @JoinColumn({ name: "car_id" })
-    transportation_car: Transportation_Car
+  @ManyToOne(
+    () => Transportation_Car,
+    (transportation_car) => transportation_car.withdraw,
+  )
+  @JoinColumn({ name: 'car_id' })
+  transportation_car: Transportation_Car;
 
-    @ManyToOne(() => Line, line => line.withdraws)
-    @JoinColumn({ name: "line_id" })
-    line: Line
+  //   @ManyToOne(() => Line, line => line.withdraws)
+  //   @JoinColumn({ name: "line_id" })
+  //   line: Line
 
-    @ManyToOne(() => User, user => user.withdraws)
-    @JoinColumn({ name: "user_id" })
-    user: User
+  @ManyToOne(() => User, (user) => user.withdraws)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 }

@@ -25,7 +25,7 @@ export class OrderCustomerDetail extends FactoryTemplate {
     @JoinColumn({ name: "order_customer_id" })
     order_customer: OrderCustomer;
 
-    @ManyToOne(() => Product, product => product.order_customer_details)
-    @JoinColumn({ name: "product_id" })
-    product: Product;
+    // @ManyToOne(() => Product, product => product.order_customer_details)
+    // @JoinColumn({ name: "product_id" })
+    // product: Product;
 }

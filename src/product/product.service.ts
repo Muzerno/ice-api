@@ -13,92 +13,100 @@ export class ProductService {
     private productRepository: Repository<Product>,
 
     @InjectRepository(StockCar)
-    private stockInCarRepository: Repository<StockCar>
-  ) { }
+    private stockInCarRepository: Repository<StockCar>,
+  ) {}
   async create(body: ICreateProduct) {
     try {
-      await this.productRepository.createQueryBuilder('product')
-        .insert().into(Product).values({
+      await this.productRepository
+        .createQueryBuilder('product')
+        .insert()
+        .into(Product)
+        .values({
           name: body.name,
           price: body.price,
           amount: 0,
-
-        }).execute()
+        })
+        .execute();
     } catch (error) {
-      throw new Error(error.message)
+      throw new Error(error.message);
     }
   }
 
   async findAll() {
     try {
-      const product = await this.productRepository.find()
-      return product
+      const product = await this.productRepository.find();
+      return product;
     } catch (error) {
-      throw new Error(error.message)
+      throw new Error(error.message);
     }
   }
 
   async findAllDropdown() {
     try {
       const product = await this.productRepository.find({
-        where: {
-          status: "active"
-        }
-      })
-      return product
+        // where: {
+        //   status: "active"
+        // }
+      });
+      return product;
     } catch (error) {
-      throw new Error(error.message)
+      throw new Error(error.message);
     }
   }
 
   async findOne(id: number) {
     try {
-      const product = await this.productRepository.findOne({ where: { id: id } })
-      return product
+      const product = await this.productRepository.findOne({
+        where: { id: id },
+      });
+      return product;
     } catch (error) {
-      throw new Error(error.message)
+      throw new Error(error.message);
     }
   }
 
   async update(id: number, body: IUpdateProduct) {
     try {
-      await this.productRepository.createQueryBuilder('product')
+      await this.productRepository
+        .createQueryBuilder('product')
         .update()
         .where({ id: id })
         .set({
           name: body.name,
           price: body.price,
-        }).execute()
+        })
+        .execute();
     } catch (error) {
-      throw new Error(error.message)
+      throw new Error(error.message);
     }
   }
 
   async remove(id: number) {
     try {
-      await this.productRepository.delete(id)
+      await this.productRepository.delete(id);
     } catch (error) {
-      throw new Error(error.message)
+      throw new Error(error.message);
     }
   }
 
   async findAllProductInCar(car_id: number) {
     try {
-      const product = await this.stockInCarRepository.createQueryBuilder('s')
+      const product = await this.stockInCarRepository
+        .createQueryBuilder('s')
         .select([
           `s.id as id`,
-          `s.product_id as product_id`,
+          `s.ice_id as ice_id`,
           `s.amount as stock_amount`,
           `p.name as product_name`,
           `p.amount as product_amount`,
-          `p.price as product_price`
+          `p.price as product_price`,
         ])
-        .leftJoin('ice', 'p', 's.product_id = p.id')
+        .leftJoin('ice', 'p', 's.ice_id = p.id')
         .where({ car_id: car_id })
-        .getRawMany()
-      return product
+        .getRawMany();
+      return product;
     } catch (error) {
-      throw new Error(error.message)
+      throw new Error(error.message);
     }
   }
 }
