@@ -17,7 +17,7 @@ export class ProductService {
   ) {}
   async create(body: ICreateProduct) {
     try {
-      await this.productRepository
+      const result = await this.productRepository
         .createQueryBuilder('product')
         .insert()
         .into(Product)
@@ -27,6 +27,9 @@ export class ProductService {
           amount: 0,
         })
         .execute();
+
+      const generatedId = result.identifiers[0].id;
+      return { id: generatedId }; // หรือจะ return ทั้ง result ก็ได้
     } catch (error) {
       throw new Error(error.message);
     }

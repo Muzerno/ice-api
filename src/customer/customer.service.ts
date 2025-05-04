@@ -53,7 +53,11 @@ export class CustomerService {
 
   async findAll() {
     try {
-      const customer = await this.customerRepository.find();
+      const customer = await this.customerRepository.find({
+        where: {
+          type_cus: 0,
+        },
+      });
       return customer;
     } catch (error) {
       throw new Error(error.message);
