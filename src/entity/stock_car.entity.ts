@@ -6,27 +6,28 @@ import {
   OneToMany,
   JoinColumn,
   Unique,
+  PrimaryColumn,
+  ManyToOne
 } from 'typeorm';
 import { WithdrawDetail } from './withdraw_detail.entity';
 import { Product } from './product.entity';
+import { Transportation_Car } from './transport_car.entity';
 
 @Entity({ name: 'stock_in_car' })
-@Unique(['car_id', 'ice_id'])
 export class StockCar {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn()
+  car_id: number;
 
-  @Column()
+  @PrimaryColumn()
   ice_id: number;
 
   @Column()
   amount: number;
 
-  @Column()
-  car_id: number;
-
-  // @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  // createAt: Date;
+  // 🔗 ความสัมพันธ์กับตาราง Car
+  @ManyToOne(() => Transportation_Car, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'car_id' })
+  car: Transportation_Car;
 
   // @OneToMany(() => Product, (product) => product.stock_car)
   @JoinColumn({ name: 'product_id' })

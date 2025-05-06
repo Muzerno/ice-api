@@ -10,9 +10,10 @@ import { Delivery } from 'src/entity/delivery.entity';
 import { DeliveryDetail } from 'src/entity/delivery_detail.entity';
 import { Product } from 'src/entity/product.entity';
 import { Money } from 'src/entity/money.entity';
+import { NormalPoint } from 'src/entity/normal_point.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Transportation_Car, Line, DropOffPoint, StockCar, Delivery, DeliveryDetail, Product, Money])],
+  imports: [TypeOrmModule.forFeature([Transportation_Car, Line, DropOffPoint, StockCar, Delivery, DeliveryDetail, Product, Money,NormalPoint])],
   controllers: [TransportationController],
   providers: [TransportationService],
 })

@@ -1,4 +1,11 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { FactoryTemplate } from './factory.template';
 import { UUID } from 'crypto';
 import { User } from './user.entity';
@@ -11,7 +18,10 @@ import { Delivery } from './delivery.entity';
 import { DeliveryDetail } from './delivery_detail.entity';
 
 @Entity({ name: 'car' })
-export class Transportation_Car extends FactoryTemplate {
+export class Transportation_Car {
+  @PrimaryGeneratedColumn('increment')
+  car_id: number;
+
   @Column()
   car_number: string;
 

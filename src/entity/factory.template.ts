@@ -6,6 +6,4 @@ export class FactoryTemplate {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-//   @Column({ type: 'enum', enum: ['active', 'inactive'] })
-//   status: string;
 }

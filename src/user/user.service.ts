@@ -59,6 +59,7 @@ export class UserService {
       if (body.telephone !== undefined) updateData.telephone = body.telephone;
       if (body.firstname !== undefined) updateData.firstname = body.firstname;
       if (body.lastname !== undefined) updateData.lastname = body.lastname;
+      if (body.address !== undefined) updateData.address = body.address;
       if (body.role_id !== undefined) updateData.role = { id: body.role_id };
 
       // ถ้าไม่มีข้อมูลให้อัปเดต

@@ -94,7 +94,6 @@ export class ProductService {
       const product = await this.stockInCarRepository
         .createQueryBuilder('s')
         .select([
-          `s.id as id`,
           `s.ice_id as ice_id`,
           `s.amount as stock_amount`,
           `p.name as product_name`,

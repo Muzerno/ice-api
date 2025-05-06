@@ -1,9 +1,14 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { FactoryTemplate } from './factory.template';
 import { Line } from './transportation.entity';
 import { DropOffPoint } from './drop_off_point.entity';
+import { NormalPoint } from './normal_point.entity';
+
 @Entity()
-export class Customer extends FactoryTemplate {
+export class Customer {
+  @PrimaryColumn({ type: 'int' })
+  customer_id: number;
+
   @Column({ length: 50 })
   name: string;
 
@@ -19,14 +24,11 @@ export class Customer extends FactoryTemplate {
   @Column({ type: 'text' })
   address: string;
 
-  @Column({ length: 50 })
-  customer_code: string;
-
   @Column({ default: 0 })
   type_cus: number;
 
-  @OneToMany(() => Line, (Line) => Line.customer)
-  Lines: Line[];
+  @OneToMany(() => NormalPoint, (normalPoint) => normalPoint.customer)
+  normalPoints: NormalPoint[];
 
   @OneToMany(() => DropOffPoint, (dropOffPoint) => dropOffPoint.customer)
   drop_off_points: DropOffPoint[];

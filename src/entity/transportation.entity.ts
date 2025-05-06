@@ -5,6 +5,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { FactoryTemplate } from './factory.template';
 import { UUID } from 'crypto';
@@ -12,11 +13,13 @@ import { Transportation_Car } from './transport_car.entity';
 import { Customer } from './customer.entity';
 import { DropOffPoint } from './drop_off_point.entity';
 import { Withdraw } from './withdraw.entity';
+import { NormalPoint } from './normal_point.entity';
+import { Money } from './money.entity';
 
 @Entity({ name: 'line' })
-export class Line extends FactoryTemplate {
-  @Column()
-  customer_id: number;
+export class Line {
+  @PrimaryGeneratedColumn('increment', { name: 'line_id' })
+  line_id: number;
 
   @Generated('increment')
   number: number;
@@ -34,15 +37,14 @@ export class Line extends FactoryTemplate {
   @JoinColumn({ name: 'car_id' })
   transportation_car: Transportation_Car;
 
-  @ManyToOne(() => Customer, (customer) => customer.Lines)
-  @JoinColumn({ name: 'customer_id' })
-  customer: Customer;
-
-  // @OneToMany(() => Withdraw, (withdraw) => withdraw.line)
-  // withdraws: Withdraw[];
+  @OneToMany(() => Money, (money) => money.line)
+  moneyRecords: Money[];
 
   @OneToMany(() => DropOffPoint, (dropOffPoint) => dropOffPoint.line, {
     onDelete: 'CASCADE',
   })
   dropOffPoints: DropOffPoint[];
+
+  @OneToMany(() => NormalPoint, (normalPoint) => normalPoint.line)
+  normalPoints: NormalPoint[];
 }

@@ -6,6 +6,7 @@ import { ILike, Repository } from 'typeorm';
 import { ICreateManufacture, IUpdateManufacture } from './validator/validator';
 import { Product } from 'src/entity/product.entity';
 import { NotFoundException } from '@nestjs/common/exceptions/not-found.exception';
+import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
 
 @Injectable()
 export class ManufactureService {
@@ -62,6 +63,7 @@ export class ManufactureService {
       .where("DATE_FORMAT(manufacture.date_time, '%Y-%m-%d') LIKE :date", {
         date: `%${date}%`,
       })
+      .orderBy('manufacture.date_time', 'DESC')
       .getMany();
   }
 
@@ -69,41 +71,57 @@ export class ManufactureService {
     return await this.manufactureRepository.findOne({ where: { id: id } });
   }
 
-  async update(id: number, body: IUpdateManufacture) {
+  async update(body: IUpdateManufacture) {
+    const { manufacture_id, ice_id } = body;
+
+    if (!manufacture_id || !ice_id) {
+      throw new BadRequestException('Missing manufacture_id or ice_id');
+    }
+
     const checkData = await this.manufactureRepository.findOne({
-      where: { id },
+      where: { id: manufacture_id },
       relations: [
         'manufacture_details',
         'user',
         'manufacture_details.products',
       ],
     });
-  
+
     if (!checkData) {
-      throw new NotFoundException(`Manufacture with ID ${id} not found`);
+      throw new NotFoundException(
+        `Manufacture with ID ${manufacture_id} not found`,
+      );
     }
-  
+
     const updateManufactureData: Partial<IUpdateManufacture> = {};
     if (body.date_time !== undefined) {
       updateManufactureData.date_time = body.date_time;
+      await this.manufactureRepository.update(
+        manufacture_id,
+        updateManufactureData,
+      );
     }
-  
-    if (Object.keys(updateManufactureData).length > 0) {
-      await this.manufactureRepository.update(id, updateManufactureData);
+
+    if (body.amount !== undefined) {
+      await this.manufactureDetailRepository.update(
+        {
+          manufacture_id,
+          ice_id,
+        },
+        {
+          manufacture_amount: body.amount,
+        },
+      );
     }
-  
-    const detail = checkData.manufacture_details?.[0];
-    if (detail && body.amount !== undefined) {
-      await this.manufactureDetailRepository.update(detail.id, {
-        manufacture_amount: body.amount,
-      });
-    }
-  
+
     return true;
   }
-  
 
   async remove(id: number) {
-    return await this.manufactureDetailRepository.delete(id);
+    // ลบ manufacture_detail ทั้งหมดที่เกี่ยวข้องกับ manufacture_id นี้
+    await this.manufactureDetailRepository.delete({ manufacture: { id } });
+
+    // จากนั้นลบ manufacture
+    return await this.manufactureRepository.delete(id);
   }
 }

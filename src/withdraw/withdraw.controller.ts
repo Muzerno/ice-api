@@ -1,19 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { WithdrawService } from './withdraw.service';
 import { ICreateOrderVip, IReqCreateWithdraw } from './validator/validator';
 
 @Controller('withdraw')
 export class WithdrawController {
-  constructor(private readonly withdrawService: WithdrawService) {
-  }
+  constructor(private readonly withdrawService: WithdrawService) {}
 
   @Get()
   async findAll(@Query('date') date: string) {
     const withdraws = await this.withdrawService.findAllWithdraws(date);
     return {
       success: true,
-      data: withdraws
-    }
+      data: withdraws,
+    };
   }
 
   @Post()
@@ -21,8 +28,8 @@ export class WithdrawController {
     const res = await this.withdrawService.createWithdraw(createWithdrawDto);
     return {
       success: true,
-      data: res
-    }
+      data: res,
+    };
   }
 
   @Post('/vip')
@@ -30,8 +37,8 @@ export class WithdrawController {
     const res = await this.withdrawService.createOrderVip(createWithdrawDto);
     return {
       success: true,
-      data: res
-    }
+      data: res,
+    };
   }
 
   @Get('/vip/')
@@ -39,15 +46,16 @@ export class WithdrawController {
     const withdraws = await this.withdrawService.findAllOrdeVip();
     return {
       success: true,
-      data: withdraws
-    }
+      data: withdraws,
+    };
   }
 
-  @Delete('/vip/:id')
-  async removeOrderVip(@Param('id') id: number) {
-    await this.withdrawService.removeOrderVip(id);
+  @Delete('/vip/:customer_id')
+  async removeOrderVip(@Param('customer_id') customer_id: number) {
+    await this.withdrawService.removeOrderVip(customer_id);
     return {
-      success: true
-    }
+      success: true,
+      message: 'Delete Customer Success',
+    };
   }
 }

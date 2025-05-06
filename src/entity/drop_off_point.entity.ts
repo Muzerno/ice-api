@@ -1,22 +1,21 @@
 import {
   Column,
   Entity,
-  Generated,
   JoinColumn,
   ManyToOne,
   OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { FactoryTemplate } from './factory.template';
+
 import { Customer } from './customer.entity';
-import { OrderCustomer } from './order_customer.entity';
 import { Line } from './transportation.entity';
 import { Transportation_Car } from './transport_car.entity';
 import { DeliveryDetail } from './delivery_detail.entity';
 
 @Entity({ name: 'drop_off_point' })
-export class DropOffPoint extends FactoryTemplate {
-  @Generated('increment')
-  drop_no: number;
+export class DropOffPoint {
+  @PrimaryGeneratedColumn('increment')
+  drop_id: number;
 
   @Column({ nullable: true })
   drop_status: string;
@@ -29,9 +28,6 @@ export class DropOffPoint extends FactoryTemplate {
 
   @Column({ nullable: true })
   customer_id: number;
-
-  // @Column({ nullable: true })
-  // customer_order_id: number;
 
   @Column({ nullable: true })
   line_id: number;
@@ -57,14 +53,7 @@ export class DropOffPoint extends FactoryTemplate {
   drop_type: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createAt: Date;
-
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updateAt: Date;
+  date_drop: Date;
 
   @ManyToOne(() => Customer, (customer) => customer.drop_off_points)
   @JoinColumn({ name: 'customer_id' })
