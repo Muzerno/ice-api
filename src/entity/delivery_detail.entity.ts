@@ -1,16 +1,16 @@
 import { Money } from 'src/entity/money.entity';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { OneToOne } from 'typeorm/decorator/relations/OneToOne';
 import { DropOffPoint } from './drop_off_point.entity';
 import { Product } from './product.entity';
 import { Transportation_Car } from './transport_car.entity';
-import { PrimaryColumn } from 'typeorm/decorator/columns/PrimaryColumn';
+import { PrimaryColumn } from 'typeorm';
+
 @Entity({ name: 'delivery_detail' })
 export class DeliveryDetail {
   @PrimaryColumn()
   drop_id: number;
 
-  @Column()
+  @PrimaryColumn()
   ice_id: number;
 
   @Column()
@@ -28,6 +28,9 @@ export class DeliveryDetail {
   @Column({ nullable: true })
   car_id: number;
 
+  @Column({ nullable: true })
+  money_id: number;
+
   @ManyToOne(
     () => DropOffPoint,
     (dropOffPoint) => dropOffPoint.delivery_details,
@@ -43,8 +46,13 @@ export class DeliveryDetail {
   @JoinColumn({ name: 'ice_id' })
   product: Product;
 
-
   @ManyToOne(() => Transportation_Car, (car) => car.delivery_details)
   @JoinColumn({ name: 'car_id' })
   car: Transportation_Car;
+
+  @ManyToOne(() => Money, (money) => money.delivery_details, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'money_id' })
+  money: Money;
 }
