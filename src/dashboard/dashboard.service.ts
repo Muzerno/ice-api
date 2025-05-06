@@ -63,7 +63,6 @@ export class DashboardService {
     const countCustomer = await this.customerRepository.count();
     const countCar = await this.transportationRepository.count();
 
-
     const today = format(new Date(), 'yyyy-MM-dd');
 
     const totalSell = await this.moneyRepository
@@ -84,14 +83,14 @@ export class DashboardService {
     const countSuccessDelivery = await this.dropOffPointRepository.count({
       where: {
         drop_status: 'success',
-        updateAt: ILike(`%${format(new Date(), 'yyyy-MM-dd')}%`) as any, // Cast to any to bypass type checking
+        date_drop: ILike(`%${format(new Date(), 'yyyy-MM-dd')}%`) as any, // Cast to any to bypass type checking
       },
     });
 
     const countCancelDelivery = await this.dropOffPointRepository.count({
       where: {
         drop_status: 'cancel',
-        updateAt: ILike(`%${format(new Date(), 'yyyy-MM-dd')}%`) as any, // Cast to any to bypass type checking
+        date_drop: ILike(`%${format(new Date(), 'yyyy-MM-dd')}%`) as any, // Cast to any to bypass type checking
       },
     });
 
@@ -108,28 +107,23 @@ export class DashboardService {
   }
 
   async getMoney(body: { date_time: string }) {
-    console.log(body);
     const moneyRes = await this.moneyRepository
       .createQueryBuilder('money')
-      .leftJoin('delivery_detail', 'd', 'd.id = money.delivery_id') // แก้ตรงนี้จาก delevery_id → delivery_id
-      .leftJoin('car', 'c', 'c.id = d.car_id')
+      .leftJoin('money.line', 'line')
+      .leftJoin('line.transportation_car', 'car')
       .select([
         'DATE(money.date_time) as date_time',
-        // 'money.dateString as date_string',
         'SUM(money.amount) as total',
-        'd.delivery_status as delivery_status',
-        'c.car_number as car_number',
-        'c.id as car_id',
+        'car.car_number as car_number',
+        'car.car_id as car_id',
       ])
       .where(`money.date_time >= :startDay AND money.date_time <= :endDay`, {
         startDay: body.date_time + ' 00:00:00',
         endDay: body.date_time + ' 23:59:59',
       })
-      .addGroupBy('DATE(money.date_time)')
-      // .addGroupBy('money.dateString')
-      .addGroupBy('d.delivery_status')
-      .addGroupBy('c.car_number')
-      .addGroupBy('c.id')
+      .groupBy('DATE(money.date_time)')
+      .addGroupBy('car.car_number')
+      .addGroupBy('car.car_id')
       .getRawMany();
 
     const res = await Promise.all(
@@ -141,13 +135,9 @@ export class DashboardService {
         const deliveryDetails = await this.deliveryDetailRepository
           .createQueryBuilder('delivery_detail')
           .leftJoinAndSelect('delivery_detail.dropoffpoint', 'dropoffpoint')
-          // .leftJoinAndSelect('dropoffpoint.customer_order', 'customer_order')
           .leftJoinAndSelect('dropoffpoint.customer', 'customer')
           .leftJoinAndSelect('delivery_detail.product', 'product')
           .where('delivery_detail.car_id = :carId', { carId: item.car_id })
-          .andWhere('delivery_detail.delivery_status = :deliveryStatus', {
-            deliveryStatus: item.delivery_status,
-          })
           .andWhere('DATE(delivery_detail.delivery_date) = :date', {
             date: item.date_time,
           })
@@ -165,13 +155,16 @@ export class DashboardService {
   }
 
   async updateLocation(
-    carId: number,
+    car_id: number,
     location: { latitude: string; longitude: string },
   ) {
-    return this.transportationRepository.update(carId, {
-      latitude: location.latitude,
-      longitude: location.longitude,
-    });
+    return this.transportationRepository.update(
+      { car_id },
+      {
+        latitude: location.latitude,
+        longitude: location.longitude,
+      },
+    );
   }
 
   async getCarLocation() {
@@ -198,11 +191,11 @@ export class DashboardService {
     if (body.type === 'withdraw') {
       const findCar = await this.transportationRepository
         .createQueryBuilder('transportation')
-        .where('line.id = :carId', { carId: body.line })
+        .where('line.line_id = :carId', { carId: body.line })
         .leftJoin(
           'transportation.Lines',
           'line',
-          'transportation.id = line.car_id',
+          'transportation.car_id = line.car_id',
         )
         .getOne();
 
@@ -213,7 +206,21 @@ export class DashboardService {
         .leftJoinAndSelect('car.Lines', 'line')
         .leftJoinAndSelect('withdraw_details.product', 'product');
       if (body.line) {
-        Query.where('withdraw.car_id = :lineId', { lineId: findCar.id });
+        const findCar = await this.transportationRepository
+          .createQueryBuilder('transportation')
+          .leftJoin(
+            'transportation.Lines',
+            'line',
+            'transportation.car_id = line.car_id',
+          )
+          .where('line.line_id = :carId', { carId: body.line })
+          .getOne();
+
+        if (!findCar) {
+          throw new Error(`ไม่พบรถที่ตรงกับ line_id = ${body.line}`);
+        }
+
+        Query.where('withdraw.car_id = :lineId', { lineId: findCar.car_id });
         Query.andWhere('withdraw.date_time BETWEEN :startDay AND :endDay', {
           startDay: `${body.date_from} 00:00:00`,
           endDay: `${body.date_to} 23:59:59`,
@@ -230,26 +237,36 @@ export class DashboardService {
     if (body.type === 'money') {
       const findCar = await this.transportationRepository
         .createQueryBuilder('transportation')
-        .where('line.id = :carId', { carId: body.line })
+        .where('line.line_id = :carId', { carId: body.line })
         .leftJoin(
           'transportation.Lines',
           'line',
-          'transportation.id = line.car_id',
+          'transportation.car_id = line.car_id',
         )
         .getOne();
 
       const Query = this.moneyRepository
         .createQueryBuilder('money')
-        .leftJoinAndSelect('money.delivery_details', 'delivery_details')
-        .leftJoinAndSelect('delivery_details.product', 'product')
-        .leftJoinAndSelect('delivery_details.dropoffpoint', 'dropoffpoint')
-        .leftJoinAndSelect('dropoffpoint.customer', 'customer')
-        .leftJoinAndSelect('delivery_details.car', 'car')
-        .leftJoinAndSelect('car.Lines', 'line');
+        .leftJoin('money.line', 'line')
+        .leftJoin('line.dropOffPoints', 'dropoffpoint')
+        .leftJoin('dropoffpoint.delivery_details', 'delivery_details')
+        .leftJoin('delivery_details.product', 'product')
+        .leftJoin('dropoffpoint.customer', 'customer')
+        .leftJoin('delivery_details.car', 'car')
+        .leftJoin('car.Lines', 'carLine')
+        .addSelect([
+          'line',
+          'dropoffpoint',
+          'delivery_details',
+          'product',
+          'customer',
+          'car',
+          'carLine',
+        ]);
 
       if (findCar) {
         Query.where('delivery_details.car_id = :lineId', {
-          lineId: findCar.id,
+          lineId: findCar.car_id,
         });
         Query.andWhere('money.date_time BETWEEN :startDay AND :endDay', {
           startDay: `${body.date_from} 00:00:00`,
@@ -269,31 +286,28 @@ export class DashboardService {
     if (body.type === 'delivery') {
       const findCar = await this.transportationRepository
         .createQueryBuilder('transportation')
-        .where('line.id = :carId', { carId: body.line })
+        .where('line.line_id = :carId', { carId: body.line })
         .leftJoin(
           'transportation.Lines',
           'line',
-          'transportation.id = line.car_id',
+          'transportation.car_id = line.car_id',
         )
         .getOne();
 
       const Query = this.dropOffPointRepository
         .createQueryBuilder('dropoffpoint')
-        .where('dropoffpoint.createAt BETWEEN :startDay AND :endDay', {
+        .where('dropoffpoint.date_drop BETWEEN :startDay AND :endDay', {
           startDay: `${body.date_from} 00:00:00`,
           endDay: `${body.date_to} 23:59:59`,
         })
         .leftJoinAndSelect('dropoffpoint.line', 'line')
         .leftJoinAndSelect('dropoffpoint.car', 'car')
         .leftJoinAndSelect('dropoffpoint.customer', 'customer');
-      // .leftJoinAndSelect('dropoffpoint.customer_order', 'customer_order');
 
-      // if (body.line) {
-      //     Query.andWhere('dropoffpoint.line_id = :lineId', { lineId: body.line })
-
-      // }
       if (findCar) {
-        Query.andWhere('dropoffpoint.car_id = :carId', { carId: findCar.id });
+        Query.andWhere('dropoffpoint.car_id = :carId', {
+          carId: findCar.car_id,
+        });
       }
       const res = await Query.getMany();
       return res;

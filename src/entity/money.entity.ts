@@ -1,22 +1,28 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
-import { FactoryTemplate } from './factory.template';
-import { DeliveryDetail } from './delivery_detail.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Line } from './transportation.entity';
 
 @Entity({ name: 'money' })
-export class Money extends FactoryTemplate {
+export class Money {
+  @PrimaryGeneratedColumn('increment')
+  money_id: number;
+
   @Column()
   date_time: Date;
-
-  // @Column()
-  // dateString: string;
 
   @Column()
   amount: number;
 
   @Column()
-  delivery_id: number;
+  line_id: number;
 
-  @OneToOne(() => DeliveryDetail, (delivery_details) => delivery_details.money)
-  @JoinColumn({ name: 'delivery_id' }) // ฝั่งนี้ถือ foreign key
-  delivery_details: DeliveryDetail;
+  @ManyToOne(() => Line, (line) => line.moneyRecords)
+  @JoinColumn({ name: 'line_id' })
+  line: Line;
 }

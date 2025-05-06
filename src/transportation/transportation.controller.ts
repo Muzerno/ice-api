@@ -50,10 +50,10 @@ export class TransportationController {
     }
   }
 
-  @Get('car/:id')
-  async getCar(@Param('id') id: number) {
+  @Get('car/:car_id')
+  async getCar(@Param('car_id') car_id: number) {
     try {
-      const car = await this.transportationService.getCar(id);
+      const car = await this.transportationService.getCar(car_id);
       return {
         success: true,
         data: car,
@@ -63,9 +63,9 @@ export class TransportationController {
     }
   }
 
-  @Put('car/:id')
-  async updateCar(@Param('id') id: number, @Body() body: any) {
-    const result = await this.transportationService.updateCar(id, body);
+  @Put('car/:car_id')
+  async updateCar(@Param('car_id') car_id: number, @Body() body: any) {
+    const result = await this.transportationService.updateCar(car_id, body);
 
     if (result.success === true) {
       return {
@@ -77,10 +77,10 @@ export class TransportationController {
     }
   }
 
-  @Delete('car/:id')
-  async deleteCar(@Param('id') id: number) {
+  @Delete('car/:car_id')
+  async deleteCar(@Param('car_id') car_id: number) {
     try {
-      await this.transportationService.deleteCar(id);
+      await this.transportationService.deleteCar(car_id);
       return { message: 'Car deleted successfully' };
     } catch (error) {
       throw new Error(error.message);
@@ -89,7 +89,7 @@ export class TransportationController {
 
   @Post('line/add-customers')
   async addCustomersToLine(
-    @Body() body: { line_name: string; car_id: number; customer_ids: number[] },
+    @Body() body: { line_id: number; customer_ids: number[] },
   ) {
     return this.transportationService.addCustomersToLine(body);
   }
@@ -115,14 +115,13 @@ export class TransportationController {
 
   @Get()
   async getAllLines() {
-
     return this.transportationService.getAllLines();
   }
 
-  @Get(':id')
-  async getLine(@Param('id') id: number) {
-    return this.transportationService.getLine(id);
-  }
+  // @Get(':id')
+  // async getLine(@Param('id') id: number) {
+  //   return this.transportationService.getLine(id);
+  // }
 
   @Get('line/byCar/:car_id')
   async getLineByCar(
@@ -137,32 +136,34 @@ export class TransportationController {
     return this.transportationService.updateLine(id, body);
   }
 
-  @Delete(':id')
-  async deleteLine(@Param('id') id: number) {
-    return this.transportationService.deleteLine(id);
+  @Delete(':lineId/customer/:cusId')
+  async removeCustomerFromLine(
+    @Param('lineId') lineId: number,
+    @Param('cusId') cusId: number,
+  ) {
+    return this.transportationService.removeCustomerFromLine(lineId, cusId);
   }
 
   @Patch('delete')
   async deleteLineWithArray(@Body() body: { ids: number[] }) {
+    if (!Array.isArray(body.ids)) {
+      throw new BadRequestException('ids must be an array');
+    }
     return this.transportationService.deleteLineWithArray(body.ids);
   }
 
-  @Patch('update/DeliveryStatus/:id')
+  @Patch('update/DeliveryStatus/:drop_id')
   async updateDeliveryStatus(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('drop_id', ParseIntPipe) drop_id: number,
     @Body()
     body: {
-      products: number[]; // แก้จาก [] เป็น number[]
-      product_amount: Record<number, number>; // ชัดเจนว่าเป็น object แบบใด
+      products: number[];
+      product_amount: Record<number, number>;
       car_id: number;
       delivery_status: string;
     },
   ) {
-    return await this.transportationService.updateDeliveryStatus(id, body);
+    return await this.transportationService.updateDeliveryStatus(drop_id, body);
   }
 
-  // @Post('/update/location/:car_id')
-  // async updateLocation(@Param('car_id') car_id: number, @Body() body: { latitude: number, longitude: number }) {
-  //   return this.transportationService.updateLocation(car_id, body);
-  // }
 }

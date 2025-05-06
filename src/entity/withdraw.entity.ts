@@ -4,30 +4,25 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { FactoryTemplate } from './factory.template';
 import { WithdrawDetail } from './withdraw_detail.entity';
 import { Transportation_Car } from './transport_car.entity';
 import { User } from './user.entity';
-import { Line } from './transportation.entity';
 
-@Entity()
-export class Withdraw extends FactoryTemplate {
+@Entity({ name: 'withdraw' })
+export class Withdraw {
+  @PrimaryGeneratedColumn('increment')
+  withdraw_id: number;
+
   @Column()
   date_time: Date;
-
-  // @Column()
-  // to_day: string
 
   @Column()
   user_id: number;
 
   @Column()
   car_id: number;
-
-  // @Column()
-  // line_id: number
 
   @OneToMany(() => WithdrawDetail, (withdrawDetail) => withdrawDetail.withdraw)
   withdraw_details: WithdrawDetail[];
@@ -38,10 +33,6 @@ export class Withdraw extends FactoryTemplate {
   )
   @JoinColumn({ name: 'car_id' })
   transportation_car: Transportation_Car;
-
-  //   @ManyToOne(() => Line, line => line.withdraws)
-  //   @JoinColumn({ name: "line_id" })
-  //   line: Line
 
   @ManyToOne(() => User, (user) => user.withdraws)
   @JoinColumn({ name: 'user_id' })

@@ -2,68 +2,86 @@ import { Injectable } from '@nestjs/common';
 import { ICreateCustomer } from './validator/validator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Customer } from 'src/entity/customer.entity';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { UUID } from 'crypto';
+import { BadRequestException } from '@nestjs/common';
+import { NormalPoint } from 'src/entity/normal_point.entity';
 
 @Injectable()
 export class CustomerService {
   constructor(
     @InjectRepository(Customer)
-    private customerRepository: Repository<Customer>,
+    private readonly customerRepository: Repository<Customer>,
+    private readonly dataSource: DataSource,
+
+    @InjectRepository(NormalPoint)
+    private normalPointRepository: Repository<NormalPoint>,
   ) {}
 
-  private generateCustomerCode(): string {
-    const numbers = '0123456789';
-    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-    let code = 'C-';
-    for (let i = 0; i < 2; i++)
-      code += numbers.charAt(Math.floor(Math.random() * numbers.length));
-    for (let i = 0; i < 5; i++)
-      code += letters.charAt(Math.floor(Math.random() * letters.length));
-    for (let i = 0; i < 2; i++)
-      code += numbers.charAt(Math.floor(Math.random() * numbers.length));
-
-    return code;
+  private generateCustomerCode(): number {
+    // สร้างตัวเลข 9 หลัก (100000000 - 999999999)
+    const min = 100000000;
+    const max = 999999999;
+    return Math.floor(min + Math.random() * (max - min + 1));
   }
 
   async create(body: ICreateCustomer) {
+    const queryRunner = this.dataSource.createQueryRunner(); // ใช้ dataSource แทน connection
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const customerCode = this.generateCustomerCode();
+      let customerCode: number;
+      let isUnique = false;
+      let attempts = 0;
+      const maxAttempts = 5;
 
-      await this.customerRepository
-        .createQueryBuilder('customer')
-        .insert()
-        .values({
-          name: body.name,
-          telephone: body.telephone,
-          latitude: body.latitude,
-          longitude: body.longitude,
-          address: body.address,
-          customer_code: customerCode,
-          type_cus: 0
-        })
-        .execute();
+      while (!isUnique && attempts < maxAttempts) {
+        attempts++;
+        customerCode = this.generateCustomerCode();
 
-      return { success: true };
+        const existing = await queryRunner.manager
+          .getRepository(Customer)
+          .findOne({ where: { customer_id: customerCode } });
+
+        if (!existing) {
+          isUnique = true;
+        }
+      }
+
+      if (!isUnique) {
+        throw new Error('Cannot generate unique customer ID');
+      }
+
+      await queryRunner.manager.getRepository(Customer).insert({
+        customer_id: customerCode,
+        name: body.name,
+        telephone: body.telephone,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        address: body.address,
+        type_cus: 0,
+      });
+
+      await queryRunner.commitTransaction();
+
+      return {
+        success: true,
+        customer_id: customerCode,
+      };
     } catch (error) {
-      throw new Error(error.message);
-    }
-}
-
-  async findAll() {
-    try {
-      const customer = await this.customerRepository.find();
-      return customer;
-    } catch (error) {
-      throw new Error(error.message);
+      await queryRunner.rollbackTransaction();
+      throw new Error(`Failed to create customer: ${error.message}`);
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  async findOne(id: number) {
+  async findAll() {
     try {
-      const customer = await this.customerRepository.findOne({
-        where: { id: id },
+      const customer = await this.customerRepository.find({
+        where: { type_cus: 0 },
       });
       return customer;
     } catch (error) {
@@ -71,13 +89,24 @@ export class CustomerService {
     }
   }
 
-  async update(id: number, body: ICreateCustomer) {
+  async findOne(customer_id: number) {
+    try {
+      const customer = await this.customerRepository.findOne({
+        where: { customer_id: customer_id },
+      });
+      return customer;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async update(customer_id: number, body: ICreateCustomer) {
     try {
       console.log('body', body);
       await this.customerRepository
         .createQueryBuilder('customer')
         .update()
-        .where({ id: id })
+        .where({ customer_id: customer_id })
         .set({
           ...body,
         })
@@ -87,7 +116,17 @@ export class CustomerService {
     }
   }
 
-  async remove(id: number) {
-    await this.customerRepository.delete(id);
+  async remove(customer_id: number) {
+    const relatedPoints = await this.normalPointRepository.find({
+      where: { customer: { customer_id: customer_id } },
+    });
+
+    if (relatedPoints.length > 0) {
+      throw new BadRequestException(
+        'ไม่สามารถลบลูกค้าได้ เนื่องจากมีการผูกไว้กับสายรถ',
+      );
+    }
+
+    await this.customerRepository.delete(customer_id);
   }
 }
