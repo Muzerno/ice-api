@@ -255,7 +255,6 @@ export class TransportationService {
           startDay: `${date} 00:00:00`,
           endDay: `${date} 23:59:59`,
         })
-        // .leftJoinAndSelect('d.line', 'line') // ต้องมี relation นี้ใน Entity
         .leftJoinAndSelect('d.customer', 'customer')
         .leftJoinAndSelect('d.delivery_details', 'delivery_detail')
         .leftJoinAndSelect('delivery_detail.product', 'product_detail')
@@ -430,7 +429,21 @@ export class TransportationService {
   ) {
     try {
       let priceAmount = 0;
-      const deliveryDetailArray = [];
+      const deliveryDetailArray: DeliveryDetail[] = [];
+
+      const drop_off_point = await this.dropOffPointRepository.findOne({
+        where: { drop_id },
+        relations: ['line'],
+      });
+
+      if (!drop_off_point) {
+        return {
+          success: false,
+          message: 'Drop-off point not found',
+        };
+      }
+
+      let savedMoney: Money | null = null;
 
       if (body.products && body.products.length > 0) {
         for (const stockId of body.products) {
@@ -466,58 +479,47 @@ export class TransportationService {
             };
           }
 
-          deliveryDetailArray.push({
-            drop_id: drop_id,
-            stock_car_id: stockId,
-            amount: amount,
-            ice_id: checkProduct.ice_id,
-            price: findProduct.price,
-            delivery_date: new Date(),
-            car_id: body.car_id,
-          });
-
           priceAmount += findProduct.price * amount;
 
-          // Update stock
+          const deliveryDetail = new DeliveryDetail();
+          deliveryDetail.drop_id = drop_id;
+          deliveryDetail.ice_id = checkProduct.ice_id;
+          deliveryDetail.amount = amount;
+          deliveryDetail.price = findProduct.price;
+          deliveryDetail.delivery_date = new Date();
+          deliveryDetail.car_id = body.car_id;
+
+          deliveryDetailArray.push(deliveryDetail);
+
           checkProduct.amount -= amount;
           await this.stockCarRepository.save(checkProduct);
         }
 
-        const savedDeliveryDetails = [];
-        for (const detail of deliveryDetailArray) {
-          const saved = await this.deliveryDetailRepository.save(detail);
-          savedDeliveryDetails.push(saved);
-        }
-
-        const drop_off_point = await this.dropOffPointRepository.findOne({
-          where: { drop_id },
-        });
-
+        // หาก status = success, สร้าง Money record ก่อน
         if (
           body.delivery_status === 'success' &&
-          savedDeliveryDetails.length > 0 &&
+          deliveryDetailArray.length > 0 &&
           drop_off_point.line_id
         ) {
-          await this.moneyRepository.save({
-            date_time: new Date(),
-            dateString: format(new Date(), 'yyyy-MM-dd'),
-            amount: priceAmount,
-            line: { line_id: drop_off_point.line_id },
-          });
+          const money = new Money();
+          money.date_time = new Date();
+          money.amount = priceAmount;
+          money.line = { line_id: drop_off_point.line_id } as any;
+
+          savedMoney = await this.moneyRepository.save(money);
         }
+
+        // ใส่ money_id ให้กับ delivery details (ถ้ามี)
+        if (savedMoney) {
+          for (const detail of deliveryDetailArray) {
+            detail.money = savedMoney;
+          }
+        }
+
+        await this.deliveryDetailRepository.save(deliveryDetailArray);
       }
 
-      const drop_off_point = await this.dropOffPointRepository.findOne({
-        where: { drop_id },
-      });
-
-      if (!drop_off_point) {
-        return {
-          success: false,
-          message: 'Drop-off point not found',
-        };
-      }
-
+      // อัปเดต drop status
       drop_off_point.drop_status = body.delivery_status;
       await this.dropOffPointRepository.save(drop_off_point);
 

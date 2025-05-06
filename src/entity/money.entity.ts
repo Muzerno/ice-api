@@ -2,11 +2,12 @@ import {
   Column,
   Entity,
   JoinColumn,
-  OneToOne,
+  OneToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Line } from './transportation.entity';
+import { DeliveryDetail } from './delivery_detail.entity';
 
 @Entity({ name: 'money' })
 export class Money {
@@ -25,4 +26,7 @@ export class Money {
   @ManyToOne(() => Line, (line) => line.moneyRecords)
   @JoinColumn({ name: 'line_id' })
   line: Line;
+
+  @OneToMany(() => DeliveryDetail, (detail) => detail.money)
+  delivery_details: DeliveryDetail[];
 }
