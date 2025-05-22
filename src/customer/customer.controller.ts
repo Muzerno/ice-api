@@ -46,7 +46,6 @@ export class CustomerController {
       newCustomerId: result.newCustomerId,
     };
   }
-
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const customer = await this.customerService.findOne(id);
