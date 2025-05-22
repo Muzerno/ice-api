@@ -8,6 +8,6 @@ export class ICreateCar {
 
 export class ICreateLine {
     line_name: string
-    customer_id: number[]
+    customer_id: string[]
     car_id?: number
 }

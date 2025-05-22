@@ -1,5 +1,5 @@
 export class ICreateCustomer {
-    customer_id: number
+    customer_id: string
     name: string
     telephone: string
     latitude: string

@@ -5,7 +5,7 @@ import { Product } from './product.entity';
 @Entity({ name: 'manufacture_detail' })
 export class ManufactureDetail {
   @PrimaryColumn()
-  ice_id: number;
+  ice_id: string;
 
   @PrimaryColumn()
   manufacture_id: number;

@@ -6,8 +6,8 @@ import { NormalPoint } from './normal_point.entity';
 
 @Entity()
 export class Customer {
-  @PrimaryColumn({ type: 'int' })
-  customer_id: number;
+  @PrimaryColumn()
+  customer_id: string;
 
   @Column({ length: 50 })
   name: string;

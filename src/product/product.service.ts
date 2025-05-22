@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { ICreateProduct, IUpdateProduct } from './validator/validator';
 import { UUID } from 'crypto';
 import { StockCar } from 'src/entity/stock_car.entity';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class ProductService {
@@ -15,23 +16,41 @@ export class ProductService {
     @InjectRepository(StockCar)
     private stockInCarRepository: Repository<StockCar>,
   ) {}
+
   async create(body: ICreateProduct) {
     try {
+      const existingProduct = await this.productRepository.findOne({
+        where: { ice_id: body.ice_id },
+      });
+  
+      if (existingProduct) {
+        throw new HttpException('ICE ID ซ้ำกับสินค้าเดิม', HttpStatus.CONFLICT);
+      }
+  
       await this.productRepository
         .createQueryBuilder('product')
         .insert()
         .into(Product)
         .values({
+          ice_id: body.ice_id,
           name: body.name,
           price: body.price,
           amount: 0,
         })
         .execute();
+  
+      return { success: true };
     } catch (error) {
-      throw new Error(error.message);
+      // ตรวจสอบว่า error เป็น HttpException หรือไม่
+      if (error instanceof HttpException) {
+        throw error; // ส่งออกตามเดิม
+      }
+  
+      // ไม่งั้นก็สร้างใหม่แบบ 500 พร้อมข้อความจริง
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
-
+  
   async findAll() {
     try {
       const product = await this.productRepository.find();
@@ -54,10 +73,10 @@ export class ProductService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(ice_id: number) {
     try {
       const product = await this.productRepository.findOne({
-        where: { id: id },
+        where: { ice_id: ice_id.toString() },
       });
       return product;
     } catch (error) {
@@ -65,12 +84,12 @@ export class ProductService {
     }
   }
 
-  async update(id: number, body: IUpdateProduct) {
+  async update(ice_id: number, body: IUpdateProduct) {
     try {
       await this.productRepository
         .createQueryBuilder('product')
         .update()
-        .where({ id: id })
+        .where({ ice_id: ice_id })
         .set({
           name: body.name,
           price: body.price,
@@ -81,9 +100,9 @@ export class ProductService {
     }
   }
 
-  async remove(id: number) {
+  async remove(ice_id: number) {
     try {
-      await this.productRepository.delete(id);
+      await this.productRepository.delete(ice_id);
     } catch (error) {
       throw new Error(error.message);
     }
@@ -100,7 +119,7 @@ export class ProductService {
           `p.amount as product_amount`,
           `p.price as product_price`,
         ])
-        .leftJoin('ice', 'p', 's.ice_id = p.id')
+        .leftJoin('ice', 'p', 's.ice_id = p.ice_id')
         .where({ car_id: car_id })
         .getRawMany();
       return product;

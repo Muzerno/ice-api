@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import { FactoryTemplate } from "./factory.template";
 import { Loading } from "./loading.entity";
 import { ManufactureDetail } from "./manufacture_detail.entity";
@@ -8,7 +8,10 @@ import { OrderCustomerDetail } from "./order_customer_detail.entity";
 import { StockCar } from "./stock_car.entity";
 import { DeliveryDetail } from "./delivery_detail.entity";
 @Entity({ name: "ice" })
-export class Product extends FactoryTemplate {
+export class Product {
+
+    @PrimaryColumn()
+    ice_id: string
 
     @Column()
     name: string
@@ -18,10 +21,6 @@ export class Product extends FactoryTemplate {
 
     @Column()
     amount: number
-
-    // @ManyToOne(() => Loading, loading => loading.products)
-
-    // loading: Loading
 
     @OneToMany(() => ManufactureDetail, manufactureDetail => manufactureDetail.products)
     manufacture_detail: ManufactureDetail[]

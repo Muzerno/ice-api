@@ -55,7 +55,7 @@ export class DashboardService {
 
     @InjectRepository(Transportation_Car)
     private readonly transportationRepository: Repository<Transportation_Car>,
-  ) {}
+  ) { }
 
   async getDashboard() {
     const countUser = await this.userRepository.count();
@@ -111,11 +111,14 @@ export class DashboardService {
       .createQueryBuilder('money')
       .leftJoin('money.line', 'line')
       .leftJoin('line.transportation_car', 'car')
+      .leftJoin('car.users', 'driver')
       .select([
         'DATE(money.date_time) as date_time',
         'SUM(money.amount) as total',
         'car.car_number as car_number',
         'car.car_id as car_id',
+        'driver.firstname as firstname',
+        'driver.lastname as lastname',
       ])
       .where(`money.date_time >= :startDay AND money.date_time <= :endDay`, {
         startDay: body.date_time + ' 00:00:00',
@@ -124,6 +127,7 @@ export class DashboardService {
       .groupBy('DATE(money.date_time)')
       .addGroupBy('car.car_number')
       .addGroupBy('car.car_id')
+      .addGroupBy('driver.id')
       .getRawMany();
 
     const res = await Promise.all(
@@ -169,7 +173,7 @@ export class DashboardService {
 
   async getCarLocation() {
     const res = await this.transportationRepository.find({
-      //   where: { status: 'active' },
+      relations: ['users'],
     });
     return res;
   }

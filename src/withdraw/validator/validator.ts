@@ -8,10 +8,12 @@ export interface IReqCreateWithdraw {
 
 export interface ICreateOrderVip {
     car_id: number
+    line_id: number
     customer_name: string
     telephone: string
     latitude: string
     longitude: string
     address: string
-    customer_code: string
+    note:string
+    customer_id: string
 }
