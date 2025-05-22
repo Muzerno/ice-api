@@ -11,6 +11,9 @@ export class NormalPoint extends FactoryTemplate {
   @Column({ name: 'cus_id' })
   cus_id: number;
 
+  @Column()
+  step: number;
+
   @ManyToOne(() => Line, (line) => line.normalPoints, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'line_id' })
   line: Line;

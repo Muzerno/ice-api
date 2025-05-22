@@ -7,6 +7,7 @@ import { UUID } from 'crypto';
 import { BadRequestException } from '@nestjs/common';
 import { NormalPoint } from 'src/entity/normal_point.entity';
 
+
 @Injectable()
 export class CustomerService {
   constructor(
@@ -16,46 +17,33 @@ export class CustomerService {
 
     @InjectRepository(NormalPoint)
     private normalPointRepository: Repository<NormalPoint>,
-  ) {}
+  ) { }
 
   private generateCustomerCode(): number {
-    // สร้างตัวเลข 9 หลัก (100000000 - 999999999)
     const min = 100000000;
     const max = 999999999;
     return Math.floor(min + Math.random() * (max - min + 1));
   }
 
   async create(body: ICreateCustomer) {
-    const queryRunner = this.dataSource.createQueryRunner(); // ใช้ dataSource แทน connection
+    const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      let customerCode: number;
-      let isUnique = false;
-      let attempts = 0;
-      const maxAttempts = 5;
+      // ตรวจสอบว่ารหัสลูกค้าไม่ซ้ำ
+      const existing = await queryRunner.manager
+        .getRepository(Customer)
+        .findOne({ where: { customer_id: body.customer_id } });
 
-      while (!isUnique && attempts < maxAttempts) {
-        attempts++;
-        customerCode = this.generateCustomerCode();
-
-        const existing = await queryRunner.manager
-          .getRepository(Customer)
-          .findOne({ where: { customer_id: customerCode } });
-
-        if (!existing) {
-          isUnique = true;
-        }
+      if (existing) {
+        throw new Error('รหัสลูกค้าซ้ำ กรุณารีเฟรชหน้าและลองใหม่อีกครั้ง');
       }
 
-      if (!isUnique) {
-        throw new Error('Cannot generate unique customer ID');
-      }
-
+      // เพิ่มลูกค้าใหม่
       await queryRunner.manager.getRepository(Customer).insert({
-        customer_id: customerCode,
+        customer_id: body.customer_id,
         name: body.name,
         telephone: body.telephone,
         latitude: body.latitude,
@@ -68,7 +56,7 @@ export class CustomerService {
 
       return {
         success: true,
-        customer_id: customerCode,
+        customer_id: body.customer_id,
       };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -78,10 +66,12 @@ export class CustomerService {
     }
   }
 
+
   async findAll() {
     try {
       const customer = await this.customerRepository.find({
         where: { type_cus: 0 },
+        order: { customer_id: 'DESC' },
       });
       return customer;
     } catch (error) {
@@ -89,7 +79,44 @@ export class CustomerService {
     }
   }
 
-  async findOne(customer_id: number) {
+  async generateNewCustomerId(): Promise<{ success: boolean; newCustomerId?: string; error?: string }> {
+    try {
+      // ดูลูกค้าล่าสุด 1 ราย (เพราะเรียง DESC ไว้แล้ว)
+      const [latestCustomer] = await this.customerRepository.find({
+        where: { type_cus: 0 },
+        order: { customer_id: 'DESC' },
+        take: 1,
+      });
+
+      const currentYear = new Date().getFullYear().toString().slice(-2);
+
+      if (!latestCustomer) {
+        return { success: true, newCustomerId: `C-${currentYear}-001` };
+      }
+
+      const idPattern = /^C-(\d{2})-(\d{3})$/;
+      const match = String(latestCustomer.customer_id).match(idPattern);
+
+      if (!match) {
+        throw new Error('รูปแบบรหัสลูกค้าไม่ถูกต้อง');
+      }
+
+      const [, year, numberStr] = match;
+      const lastNumber = parseInt(numberStr);
+
+      // ถ้าปีเปลี่ยน ให้เริ่มต้นเลขที่ใหม่
+      if (year !== currentYear) {
+        return { success: true, newCustomerId: `C-${currentYear}-001` };
+      }
+
+      const newNumber = (lastNumber + 1).toString().padStart(3, '0');
+      return { success: true, newCustomerId: `C-${currentYear}-${newNumber}` };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  async findOne(customer_id: string) {
     try {
       const customer = await this.customerRepository.findOne({
         where: { customer_id: customer_id },
@@ -100,7 +127,7 @@ export class CustomerService {
     }
   }
 
-  async update(customer_id: number, body: ICreateCustomer) {
+  async update(customer_id: string, body: ICreateCustomer) {
     try {
       console.log('body', body);
       await this.customerRepository
@@ -116,7 +143,7 @@ export class CustomerService {
     }
   }
 
-  async remove(customer_id: number) {
+  async remove(customer_id: string) {
     const relatedPoints = await this.normalPointRepository.find({
       where: { customer: { customer_id: customer_id } },
     });

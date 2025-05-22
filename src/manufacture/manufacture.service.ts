@@ -19,7 +19,7 @@ export class ManufactureService {
 
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-  ) {}
+  ) { }
 
   async create(body: ICreateManufacture) {
     try {
@@ -34,11 +34,11 @@ export class ManufactureService {
         const amount = body.amount[productId];
         manufacture_details.manufacture_amount = amount;
         // manufacture_details.date_time = body.date_time;
-        manufacture_details.ice_id = productId;
+        manufacture_details.ice_id = productId.toString();
         manufacture_details.manufacture_id = savedManufacture.id;
 
         const product = await this.productRepository.findOne({
-          where: { id: productId },
+          where: { ice_id: productId.toString() },
         });
         if (product) {
           product.amount += amount;

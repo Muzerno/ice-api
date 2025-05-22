@@ -18,8 +18,6 @@ export class Manufacture extends FactoryTemplate {
   @Column()
   user_id: number;
 
-  // @Column({ type: "enum", enum: ["inprogress", "finish"] })
-  // status_manufacture: string
 
   @OneToMany(
     () => ManufactureDetail,

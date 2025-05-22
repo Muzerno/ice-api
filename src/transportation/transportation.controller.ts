@@ -20,7 +20,7 @@ import { Response } from 'express';
 
 @Controller('transportation')
 export class TransportationController {
-  constructor(private readonly transportationService: TransportationService) {}
+  constructor(private readonly transportationService: TransportationService) { }
   @Post('car')
   async createCar(@Body() body: ICreateCar, @Res() res: Response) {
     try {
@@ -49,6 +49,20 @@ export class TransportationController {
       throw new Error(error.message);
     }
   }
+
+  @Get('carWitLine')
+  async getAllCarWithLine() {
+    try {
+      const carsWithLine = await this.transportationService.getAllCarWithLine();
+      return {
+        success: true,
+        data: carsWithLine,
+      };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
 
   @Get('car/:car_id')
   async getCar(@Param('car_id') car_id: number) {
@@ -89,7 +103,11 @@ export class TransportationController {
 
   @Post('line/add-customers')
   async addCustomersToLine(
-    @Body() body: { line_id: number; customer_ids: number[] },
+    @Body()
+    body: {
+      line_id: number;
+      customer_ids: { cus_id: number }[];
+    }
   ) {
     return this.transportationService.addCustomersToLine(body);
   }
@@ -165,5 +183,36 @@ export class TransportationController {
   ) {
     return await this.transportationService.updateDeliveryStatus(drop_id, body);
   }
+
+  @Patch(':line_id/update-steps')
+  async updateCustomerSteps(
+    @Param('line_id', ParseIntPipe) lineId: number,
+    @Body() body: { customers: { cus_id: string; step: number }[] },
+  ) {
+    if (!body.customers || !Array.isArray(body.customers)) {
+      throw new BadRequestException('ข้อมูล customers ไม่ถูกต้อง');
+    }
+
+    // ตรวจสอบว่าแต่ละ customer มี cus_id และ step
+    for (const customer of body.customers) {
+      if (!customer.cus_id || typeof customer.step !== 'number') {
+        throw new BadRequestException('ข้อมูลลูกค้าไม่ครบถ้วน');
+      }
+    }
+
+    try {
+      const result = await this.transportationService.updateCustomerSteps(lineId, body.customers);
+
+      return {
+        success: true,
+        message: result.message || 'อัปเดตลำดับลูกค้าเรียบร้อย',
+      };
+    } catch (error) {
+      console.error(`[Controller] Error updating customer steps:`, error);
+      throw new BadRequestException(error.message || 'เกิดข้อผิดพลาดในการอัปเดต');
+    }
+  }
+
+
 
 }

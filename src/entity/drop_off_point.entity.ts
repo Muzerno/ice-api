@@ -11,6 +11,7 @@ import { Customer } from './customer.entity';
 import { Line } from './transportation.entity';
 import { Transportation_Car } from './transport_car.entity';
 import { DeliveryDetail } from './delivery_detail.entity';
+import { Money } from './money.entity';
 
 @Entity({ name: 'drop_off_point' })
 export class DropOffPoint {
@@ -27,13 +28,16 @@ export class DropOffPoint {
   longitude: string;
 
   @Column({ nullable: true })
-  customer_id: number;
+  customer_id: string;
 
   @Column({ nullable: true })
   line_id: number;
 
   @Column({ nullable: true })
   car_id: number;
+
+  @Column({ nullable: true })
+  note: string;
 
   @ManyToOne(() => Line, (line) => line.dropOffPoints, {
     onDelete: 'CASCADE',
@@ -64,4 +68,8 @@ export class DropOffPoint {
     (deliveryDetail) => deliveryDetail.dropoffpoint,
   )
   delivery_details: DeliveryDetail[];
+
+  @OneToMany(() => Money, (money) => money.drop)
+  moneyRecords: Money[];
+
 }

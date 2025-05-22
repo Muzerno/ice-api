@@ -48,7 +48,7 @@ export class WithdrawService {
 
     @InjectRepository(Transportation_Car)
     private readonly transportationRepository: Repository<Transportation_Car>,
-  ) {}
+  ) { }
 
   private generateCustomerCode(): number {
     // สร้างตัวเลข 9 หลัก (100000000 - 999999999)
@@ -93,7 +93,7 @@ export class WithdrawService {
         if (!amount) continue;
 
         const checkProduct = await this.productRepository.findOne({
-          where: { id: productId },
+          where: { ice_id: productId.toString() },
         });
         if (!checkProduct)
           return {
@@ -185,7 +185,7 @@ export class WithdrawService {
           const existingDropOffPoint =
             await this.dropOffPointRepository.findOne({
               where: {
-                customer_id: cusId,
+                customer_id: String(cusId),
                 car_id: withdrawData.car_id,
                 drop_type: 'dayly',
                 date_drop: Between(startOfToday, endOfToday),
@@ -195,7 +195,7 @@ export class WithdrawService {
           if (!existingDropOffPoint) {
             const dropOffPoint = new DropOffPoint();
             dropOffPoint.line_id = lineItem.line_id;
-            dropOffPoint.customer_id = cusId;
+            dropOffPoint.customer_id = String(cusId);
             dropOffPoint.latitude = customer.latitude;
             dropOffPoint.longitude = customer.longitude;
             dropOffPoint.car_id = withdrawData.car_id;
@@ -223,6 +223,7 @@ export class WithdrawService {
       .leftJoinAndSelect('withdraw_details.product', 'product')
       .leftJoinAndSelect('withdraw.transportation_car', 'transportation_car')
       .leftJoinAndSelect('transportation_car.Lines', 'line')
+      .leftJoinAndSelect('transportation_car.users', 'driver')
       .where('DATE(withdraw.date_time) = :date', { date })
       .orderBy('withdraw.withdraw_id', 'DESC')
       .getMany();
@@ -232,16 +233,30 @@ export class WithdrawService {
 
   async findAllOrdeVip(): Promise<Customer[]> {
     return this.customerRepository.find({
-      where: {
-        type_cus: 1, // เงื่อนไขดึงเฉพาะ type_cus = 1
-      },
       relations: [
         'drop_off_points',
-        'drop_off_points.car', // ถ้าต้องการข้อมูลรถด้วย
+        'drop_off_points.car',
+        'drop_off_points.line',
       ],
-      order: { customer_id: 'DESC' },
+      order: {
+        type_cus: 'DESC',
+        customer_id: 'DESC',
+      },
     });
   }
+
+  async findOrderVipByCarId(car_id: number): Promise<Customer[]> {
+    return this.customerRepository
+      .createQueryBuilder('customer')
+      .leftJoinAndSelect('customer.drop_off_points', 'drop_off_points')
+      .leftJoinAndSelect('drop_off_points.car', 'car')
+      .leftJoinAndSelect('drop_off_points.line', 'line')
+      .where('car.car_id = :car_id', { car_id })
+      .orderBy('customer.type_cus', 'DESC')
+      .addOrderBy('customer.customer_id', 'DESC')
+      .getMany();
+  }
+
 
   async findWithdrawById(withdraw_id: number): Promise<Withdraw> {
     return this.withdrawRepository.findOne({
@@ -263,18 +278,61 @@ export class WithdrawService {
     await this.withdrawRepository.delete(id);
   }
 
+  async generateNewCustomerId(): Promise<{ success: boolean; newCustomerId?: string; error?: string }> {
+    try {
+      // ดูลูกค้าล่าสุด 1 ราย (เพราะเรียง DESC ไว้แล้ว)
+      const [latestCustomer] = await this.customerRepository.find({
+        where: { type_cus: 1 },
+        order: { customer_id: 'DESC' },
+        take: 1,
+      });
+
+      const currentYear = new Date().getFullYear().toString().slice(-2);
+
+      if (!latestCustomer) {
+        return { success: true, newCustomerId: `CV-${currentYear}-001` };
+      }
+
+      const idPattern = /^CV-(\d{2})-(\d{3})$/;
+      const match = String(latestCustomer.customer_id).match(idPattern);
+
+      if (!match) {
+        throw new Error('รูปแบบรหัสลูกค้าไม่ถูกต้อง');
+      }
+
+      const [, year, numberStr] = match;
+      const lastNumber = parseInt(numberStr);
+
+      // ถ้าปีเปลี่ยน ให้เริ่มต้นเลขที่ใหม่
+      if (year !== currentYear) {
+        return { success: true, newCustomerId: `CV-${currentYear}-001` };
+      }
+
+      const newNumber = (lastNumber + 1).toString().padStart(3, '0');
+      return { success: true, newCustomerId: `CV-${currentYear}-${newNumber}` };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
   async createOrderVip(body: ICreateOrderVip) {
     try {
-      // Generate customer code
-      const customerCode = this.generateCustomerCode();
+      // ตรวจสอบว่า customer_id ไม่ซ้ำ
+      const existingCustomer = await this.customerRepository.findOne({
+        where: { customer_id: body.customer_id },
+      });
+
+      if (existingCustomer) {
+        throw new Error('รหัสลูกค้าซ้ำ กรุณารีเฟรชหน้าและลองใหม่อีกครั้ง');
+      }
 
       const customer = new Customer();
+      customer.customer_id = body.customer_id;
       customer.name = body.customer_name;
       customer.telephone = body.telephone;
       customer.latitude = body.latitude;
       customer.longitude = body.longitude;
       customer.address = body.address;
-      customer.customer_id = customerCode;
       customer.type_cus = 1;
 
       const savedCustomer = await this.customerRepository.save(customer);
@@ -283,20 +341,23 @@ export class WithdrawService {
         throw new Error('Failed to save customer');
       }
 
-      // สร้าง DropOffPoint เชื่อมกับ Customer (ยังส่ง car_id ไปที่ DropOffPoint ตามปกติ)
+      // สร้าง DropOffPoint เชื่อมกับ Customer
       const dropOffPoint = new DropOffPoint();
       dropOffPoint.drop_status = 'inprogress';
       dropOffPoint.latitude = body.latitude;
       dropOffPoint.longitude = body.longitude;
       dropOffPoint.drop_type = 'order';
-      dropOffPoint.car_id = body.car_id; // ยังคงส่ง car_id มาที่ DropOffPoint
+      dropOffPoint.note = body.note;
+      dropOffPoint.line_id = body.line_id;
+      dropOffPoint.car_id = body.car_id;
       dropOffPoint.customer_id = savedCustomer.customer_id;
+
       await this.dropOffPointRepository.save(dropOffPoint);
 
       return {
         success: true,
         message: 'Order VIP created successfully',
-        customer_code: customerCode,
+        customer_code: savedCustomer.customer_id,
       };
     } catch (error) {
       console.error('Error in createOrderVip:', error);
@@ -306,7 +367,8 @@ export class WithdrawService {
     }
   }
 
-  async removeOrderVip(customer_id: number) {
+
+  async removeOrderVip(customer_id: string) {
     await this.dropOffPointRepository.delete({ customer_id });
 
     await this.customerRepository.delete(customer_id);

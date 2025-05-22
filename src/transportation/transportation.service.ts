@@ -46,7 +46,7 @@ export class TransportationService {
     private normalPointRepository: Repository<NormalPoint>,
 
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   async createCar(body: ICreateCar) {
     try {
@@ -88,6 +88,12 @@ export class TransportationService {
     } catch (error) {
       throw new Error(error.message);
     }
+  }
+
+  async getAllCarWithLine() {
+    return await this.transportationRepository.find({
+      relations: ['Lines', 'users'],
+    });
   }
 
   async getCar(car_id: number) {
@@ -175,9 +181,10 @@ export class TransportationService {
       const savedLine = await this.LineRepository.save(newLine);
 
       // 2. เอา line_id ไปใส่ normal_point พร้อมกับ customer_id
-      const normalPoints = body.customer_id.map((cusId) => ({
-        line: { line_id: savedLine.line_id }, // หรือ line: savedLine ก็ได้ถ้าเป็น entity
+      const normalPoints = body.customer_id.map((cusId, index) => ({
+        line: { line_id: savedLine.line_id },
         customer: { customer_id: cusId },
+        step: index + 1,
       }));
 
       await this.normalPointRepository
@@ -214,10 +221,17 @@ export class TransportationService {
         if (!lineMap.has(key)) {
           lineMap.set(key, {
             ...line,
-            customer: line.normalPoints.map((np) => ({
-              ...np.customer,
+            transportation_car: {
+              ...line.transportation_car,
               line_id: line.line_id,
-            })),
+              line_name: line.line_name
+            },
+            customer: line.normalPoints
+              .sort((a, b) => a.step - b.step)
+              .map((np) => ({
+                ...np.customer,
+                line_id: line.line_id,
+              })),
             lineArray: [line.car_id],
           });
         } else {
@@ -261,39 +275,86 @@ export class TransportationService {
         .orderBy('d.date_drop', 'DESC')
         .getMany();
 
-      const dropDaily = [];
-      const dropOrder = [];
+      const dropDaily = dropOffPoints.filter((item) => item.drop_type === 'dayly');
+      const dropOrder = dropOffPoints.filter((item) => item.drop_type === 'order');
 
-      dropOffPoints.forEach((item) => {
-        if (item.drop_type === 'dayly') {
-          dropDaily.push(item);
-        } else if (item.drop_type === 'order') {
-          dropOrder.push(item);
-        }
-      });
+      const lineIds = Array.from(
+        new Set([...dropDaily, ...dropOrder].map((item) => item.line_id))
+      );
+
+      let normalPoints = [];
+      if (lineIds.length > 0) {
+        normalPoints = await this.dataSource
+          .getRepository('normal_point') // ถ้ามี entity ก็ใช้ชื่อ entity
+          .createQueryBuilder('n')
+          .leftJoinAndSelect('n.customer', 'customer')
+          .where('n.line_id IN (:...lineIds)', { lineIds })
+          .orderBy('n.step', 'ASC')
+          .getMany();
+      }
+
+      // ✅ map line_id → step
+      const lineStepMap = new Map(
+        normalPoints.map((np: any) => [np.line_id, np.step])
+      );
+
+      // ✅ sort dropDaily และ dropOrder ตาม step ของ line_id
+      const sortByLineStep = (a: any, b: any) =>
+        (lineStepMap.get(a.line_id) || 0) - (lineStepMap.get(b.line_id) || 0);
+
+      dropDaily.sort(sortByLineStep);
+      dropOrder.sort(sortByLineStep);
 
       return {
-        drop_dayly: dropDaily, // แก้ไขการสะกดให้สอดคล้องกัน
+        drop_dayly: dropDaily,
         drop_order: dropOrder,
+        normal_points: normalPoints,
       };
     } catch (error) {
       throw new Error(error.message);
     }
   }
 
-  // service.ts
-  async addCustomersToLine(body: { line_id: number; customer_ids: number[] }) {
+
+  async addCustomersToLine(body: {
+    line_id: number;
+    customer_ids: { cus_id: number }[];
+  }) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const newNormalPoints = body.customer_ids.map((cus_id: number) => ({
+      // ดึงลูกค้าเดิมในสายนี้
+      const existingPoints = await queryRunner.manager.find(NormalPoint, {
+        where: { line_id: body.line_id },
+        order: { step: 'ASC' },
+      });
+
+      // ดึง customer_id ที่มีอยู่แล้วในสายนี้
+      const existingCustomerIds = new Set(existingPoints.map((p) => p.cus_id));
+
+      // หา step เริ่มต้นใหม่
+      let maxStep = existingPoints.length > 0
+        ? Math.max(...existingPoints.map(p => p.step))
+        : 0;
+
+      // กรองเฉพาะลูกค้าใหม่ที่ยังไม่อยู่ในสาย
+      const newCustomers = body.customer_ids.filter(
+        (c) => !existingCustomerIds.has(c.cus_id)
+      );
+
+      // กำหนด step ต่อจาก maxStep
+      const newNormalPoints = newCustomers.map((c, i) => ({
         line_id: body.line_id,
-        cus_id,
+        cus_id: c.cus_id,
+        step: maxStep + i + 1,
       }));
 
-      await queryRunner.manager.insert(NormalPoint, newNormalPoints);
+      // insert เฉพาะลูกค้าใหม่
+      if (newNormalPoints.length > 0) {
+        await queryRunner.manager.insert(NormalPoint, newNormalPoints);
+      }
 
       await queryRunner.commitTransaction();
       return { success: true, message: 'เพิ่มลูกค้าในสายเรียบร้อย' };
@@ -304,6 +365,7 @@ export class TransportationService {
       await queryRunner.release();
     }
   }
+
 
   async getLine(line_id: number) {
     try {
@@ -356,6 +418,35 @@ export class TransportationService {
     } catch (error) {
       await queryRunner.rollbackTransaction();
       return { success: false, message: error.message };
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateCustomerSteps(lineId: number, customers: { cus_id: string, step: number }[]) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+
+      // อัปเดต step ของแต่ละลูกค้า
+      for (const { cus_id, step } of customers) {
+
+        const updateResult = await queryRunner.manager.update(
+          NormalPoint,
+          { line_id: lineId, cus_id },
+          { step }
+        );
+
+      }
+
+      await queryRunner.commitTransaction();
+
+      return { success: true, message: 'อัปเดตลำดับลูกค้าสำเร็จ' };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error; // ส่ง error ขึ้นไปให้ controller จัดการ
     } finally {
       await queryRunner.release();
     }
@@ -469,7 +560,7 @@ export class TransportationService {
           }
 
           const findProduct = await this.productRepository.findOne({
-            where: { id: checkProduct.ice_id },
+            where: { ice_id: checkProduct.ice_id.toString() },
           });
 
           if (!findProduct) {
@@ -495,7 +586,17 @@ export class TransportationService {
           await this.stockCarRepository.save(checkProduct);
         }
 
-        // หาก status = success, สร้าง Money record ก่อน
+        const line = await this.LineRepository.findOne({
+          where: { line_id: drop_off_point.line_id },
+        });
+
+        if (!line) {
+          return {
+            success: false,
+            message: 'Line not found',
+          };
+        }
+
         if (
           body.delivery_status === 'success' &&
           deliveryDetailArray.length > 0 &&
@@ -504,12 +605,12 @@ export class TransportationService {
           const money = new Money();
           money.date_time = new Date();
           money.amount = priceAmount;
-          money.line = { line_id: drop_off_point.line_id } as any;
+          money.drop_id = drop_id;
+          money.line = line;
 
           savedMoney = await this.moneyRepository.save(money);
         }
 
-        // ใส่ money_id ให้กับ delivery details (ถ้ามี)
         if (savedMoney) {
           for (const detail of deliveryDetailArray) {
             detail.money = savedMoney;
