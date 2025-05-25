@@ -56,6 +56,7 @@ export class DropOffPoint {
   @Column({ type: 'enum', enum: ['dayly', 'order'] })
   drop_type: string;
 
+  
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   date_drop: Date;
 
