@@ -51,7 +51,6 @@ export class WithdrawService {
   ) { }
 
   private generateCustomerCode(): number {
-    // สร้างตัวเลข 9 หลัก (100000000 - 999999999)
     const min = 100000000;
     const max = 999999999;
     return Math.floor(min + Math.random() * (max - min + 1));
