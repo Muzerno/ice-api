@@ -4,7 +4,7 @@ import { ExportRequest } from './interface/dashboard.interface';
 
 @Controller('dashboard')
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(private readonly dashboardService: DashboardService) { }
 
   @Get()
   async getDashboard() {
@@ -39,11 +39,13 @@ export class DashboardController {
       if (!body.type) {
         return { error: 'Type is required' };
       }
-      if (!body.date_from) {
-        return { error: 'Date from is required' };
-      }
-      if (!body.date_to) {
-        return { error: 'Date to is required' };
+      if (body.type !== 'stock') {
+        if (!body.date_from) {
+          return { error: 'Date from is required' };
+        }
+        if (!body.date_to) {
+          return { error: 'Date to is required' };
+        }
       }
       const res = await this.dashboardService.export(body);
       return res;

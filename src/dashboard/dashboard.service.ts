@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { format } from 'date-fns';
 import { Customer } from 'src/entity/customer.entity';
 import { Delivery } from 'src/entity/delivery.entity';
+import { StockCar } from 'src/entity/stock_car.entity';
 import { DeliveryDetail } from 'src/entity/delivery_detail.entity';
 import { DropOffPoint } from 'src/entity/drop_off_point.entity';
 import { Manufacture } from 'src/entity/manufacture.entit.entity';
@@ -40,6 +41,9 @@ export class DashboardService {
 
     @InjectRepository(Delivery)
     private readonly deliveryRepository: Repository<Delivery>,
+
+    @InjectRepository(StockCar)
+    private readonly stockCarRepository: Repository<StockCar>,
 
     @InjectRepository(DeliveryDetail)
     private readonly deliveryDetailRepository: Repository<DeliveryDetail>,
@@ -287,34 +291,25 @@ export class DashboardService {
       return res;
     }
 
-    if (body.type === 'delivery') {
-      const findCar = await this.transportationRepository
-        .createQueryBuilder('transportation')
-        .where('line.line_id = :carId', { carId: body.line })
-        .leftJoin(
-          'transportation.Lines',
-          'line',
-          'transportation.car_id = line.car_id',
-        )
-        .getOne();
+    if (body.type === 'stock') {
+      // ดึงข้อมูลทั้งหมดจาก stock_in_car พร้อมความสัมพันธ์ car และ product
+      const stockInCar = await this.stockCarRepository
+        .createQueryBuilder('stock_in_car')
+        .leftJoinAndSelect('stock_in_car.car', 'car')
+        .leftJoinAndSelect('stock_in_car.product', 'product')
+        .orderBy('stock_in_car.car_id', 'ASC')
+        .addOrderBy('stock_in_car.ice_id', 'ASC')
+        .getMany();
 
-      const Query = this.dropOffPointRepository
-        .createQueryBuilder('dropoffpoint')
-        .where('dropoffpoint.date_drop BETWEEN :startDay AND :endDay', {
-          startDay: `${body.date_from} 00:00:00`,
-          endDay: `${body.date_to} 23:59:59`,
-        })
-        .leftJoinAndSelect('dropoffpoint.line', 'line')
-        .leftJoinAndSelect('dropoffpoint.car', 'car')
-        .leftJoinAndSelect('dropoffpoint.customer', 'customer');
+      // ดึงข้อมูลสินค้าทั้งหมดจากตาราง product (เช่น ice001, ice002, ...)
+      const products = await this.productRepository.find();
 
-      if (findCar) {
-        Query.andWhere('dropoffpoint.car_id = :carId', {
-          carId: findCar.car_id,
-        });
-      }
-      const res = await Query.getMany();
-      return res;
+      return {
+        stockInCar,
+        products,
+      };
     }
+
+
   }
 }

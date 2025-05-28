@@ -29,7 +29,7 @@ export class StockCar {
   @JoinColumn({ name: 'car_id' })
   car: Transportation_Car;
 
-  // @OneToMany(() => Product, (product) => product.stock_car)
-  @JoinColumn({ name: 'product_id' })
-  product: Product[];
+  @ManyToOne(() => Product) // ✅ แก้จาก array เป็น single relation
+  @JoinColumn({ name: 'ice_id' })
+  product: Product;
 }

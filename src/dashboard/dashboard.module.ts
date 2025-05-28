@@ -6,6 +6,7 @@ import { User } from 'src/entity/user.entity';
 import { Product } from 'src/entity/product.entity';
 import { Customer } from 'src/entity/customer.entity';
 import { Delivery } from 'src/entity/delivery.entity';
+import { StockCar } from 'src/entity/stock_car.entity';
 import { Money } from 'src/entity/money.entity';
 import { Manufacture } from 'src/entity/manufacture.entit.entity';
 import { ManufactureDetail } from 'src/entity/manufacture_detail.entity';
@@ -17,7 +18,7 @@ import { Transportation_Car } from 'src/entity/transport_car.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Product, Customer, Delivery,
-    Money, Manufacture, Line, ManufactureDetail, Delivery, DeliveryDetail, DropOffPoint, Withdraw, Line, Transportation_Car])],
+    Money, Manufacture, Line, ManufactureDetail, Delivery, DeliveryDetail, DropOffPoint, Withdraw, Line, Transportation_Car,StockCar])],
   controllers: [DashboardController],
   providers: [DashboardService],
 })
