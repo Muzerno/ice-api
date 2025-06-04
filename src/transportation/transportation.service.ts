@@ -205,6 +205,7 @@ export class TransportationService {
   async getAllLines() {
     try {
       const lines = await this.LineRepository.find({
+        order: { line_id: 'ASC' },
         relations: [
           'transportation_car',
           'transportation_car.users',
@@ -250,11 +251,8 @@ export class TransportationService {
         }
       }
 
-      return Array.from(lineMap.values()).sort((a, b) => {
-        const carA = `${a.transportation_car?.car_number ?? ''}`.toUpperCase();
-        const carB = `${b.transportation_car?.car_number ?? ''}`.toUpperCase();
-        return carA.localeCompare(carB);
-      });
+      return Array.from(lineMap.values());
+
     } catch (error) {
       throw new Error(error.message);
     }

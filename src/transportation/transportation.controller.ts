@@ -136,10 +136,6 @@ export class TransportationController {
     return this.transportationService.getAllLines();
   }
 
-  // @Get(':id')
-  // async getLine(@Param('id') id: number) {
-  //   return this.transportationService.getLine(id);
-  // }
 
   @Get('line/byCar/:car_id')
   async getLineByCar(
