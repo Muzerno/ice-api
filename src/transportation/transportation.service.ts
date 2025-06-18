@@ -205,6 +205,7 @@ export class TransportationService {
   async getAllLines() {
     try {
       const lines = await this.LineRepository.find({
+        order: { line_id: 'ASC' },
         relations: [
           'transportation_car',
           'transportation_car.users',
@@ -250,11 +251,8 @@ export class TransportationService {
         }
       }
 
-      return Array.from(lineMap.values()).sort((a, b) => {
-        const carA = `${a.transportation_car?.car_number ?? ''}`.toUpperCase();
-        const carB = `${b.transportation_car?.car_number ?? ''}`.toUpperCase();
-        return carA.localeCompare(carB);
-      });
+      return Array.from(lineMap.values());
+
     } catch (error) {
       throw new Error(error.message);
     }
@@ -541,21 +539,25 @@ export class TransportationService {
           const amount = body.product_amount[stockId];
           if (!amount) continue;
 
+          // 🔥 แก้ไขตรงนี้: เพิ่ม car_id ในการ filter
           const checkProduct = await this.stockCarRepository.findOne({
-            where: { ice_id: stockId },
+            where: {
+              ice_id: stockId,
+              car_id: body.car_id  // เพิ่มเงื่อนไข car_id
+            },
           });
 
           if (!checkProduct) {
             return {
               success: false,
-              message: `Product with id ${stockId} not found`,
+              message: `Product with id ${stockId} not found in car ${body.car_id}`,
             };
           }
 
           if (checkProduct.amount < amount) {
             return {
               success: false,
-              message: `Product amount not enough for product id ${stockId}`,
+              message: `Product amount not enough for product id ${stockId} in car ${body.car_id}`,
             };
           }
 
@@ -582,6 +584,7 @@ export class TransportationService {
 
           deliveryDetailArray.push(deliveryDetail);
 
+          // ตัดสต็อกจากรถที่ถูกต้อง
           checkProduct.amount -= amount;
           await this.stockCarRepository.save(checkProduct);
         }

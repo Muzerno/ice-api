@@ -18,6 +18,14 @@ export class DashboardController {
     return res;
   }
 
+  @Patch('/money/status/:money_id')
+  async updateMoneyStatus(
+    @Param('money_id') money_id: number,
+    @Body('status') status: 'pending' | 'confirmed' | 'cancelled'
+  ) {
+    return this.dashboardService.updateMoneyStatus(money_id, status);
+  }
+
   @Patch('/location/:car_id')
   async updateLocation(
     @Param('car_id') car_id: number,

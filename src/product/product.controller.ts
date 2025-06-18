@@ -22,19 +22,19 @@ export class ProductController {
     return await this.productService.findAllDropdown();
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: number) {
-    return await this.productService.findOne(id);
+  @Get(':ice_id')
+  async findOne(@Param('ice_id') ice_id: number) {
+    return await this.productService.findOne(ice_id);
   }
 
-  @Patch(':id')
-  async update(@Param('id') id: number, @Body() body: IUpdateProduct) {
-    return await this.productService.update(id, body);
+  @Patch(':ice_id')
+  async update(@Param('ice_id') ice_id: number, @Body() body: IUpdateProduct) {
+    return await this.productService.update(ice_id, body);
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: number) {
-    return await this.productService.remove(id);
+  @Delete(':ice_id')
+  async remove(@Param('ice_id') ice_id: number) {
+    return await this.productService.remove(ice_id);
   }
 
   @Get(`/stock/:id`)
