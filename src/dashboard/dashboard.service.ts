@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { format } from 'date-fns';
 import { Customer } from 'src/entity/customer.entity';
@@ -123,6 +123,7 @@ export class DashboardService {
         'car.car_id as car_id',
         'driver.firstname as firstname',
         'driver.lastname as lastname',
+        'money.status as status'
       ])
       .where(`money.date_time >= :startDay AND money.date_time <= :endDay`, {
         startDay: body.date_time + ' 00:00:00',
@@ -155,11 +156,22 @@ export class DashboardService {
           ...item,
           line_name: findLine ? findLine.line_name : null,
           delivery: deliveryDetails,
+          status: item.status
         };
       }),
     );
 
     return res;
+  }
+
+  async updateMoneyStatus(money_id: number, status: 'pending' | 'confirmed' | 'cancelled') {
+    const money = await this.moneyRepository.findOne({ where: { money_id } });
+    if (!money) {
+      throw new NotFoundException(`ไม่พบข้อมูลการเงิน ID: ${money_id}`);
+    }
+
+    money.status = status;
+    return this.moneyRepository.save(money);
   }
 
   async updateLocation(

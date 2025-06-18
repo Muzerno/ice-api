@@ -21,6 +21,9 @@ export class Money {
   @Column()
   amount: number;
 
+  @Column({ default: 'pending' })
+  status: 'pending' | 'confirmed' | 'cancelled';
+
   @Column({ nullable: true })
   line_id: number;
 

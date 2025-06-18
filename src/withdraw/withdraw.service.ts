@@ -279,68 +279,41 @@ export class WithdrawService {
 
   async generateNewCustomerId(): Promise<{ success: boolean; newCustomerId?: string; error?: string }> {
     try {
-      // ดูลูกค้าล่าสุด 1 ราย (เพราะเรียง DESC ไว้แล้ว)
-      const [latestCustomer] = await this.customerRepository.find({
-        where: { type_cus: 1 },
-        order: { customer_id: 'DESC' },
-        take: 1,
-      });
-
-      const currentYear = new Date().getFullYear().toString().slice(-2);
-
-      if (!latestCustomer) {
-        return { success: true, newCustomerId: `CV-${currentYear}-001` };
-      }
-
-      const idPattern = /^CV-(\d{2})-(\d{3})$/;
-      const match = String(latestCustomer.customer_id).match(idPattern);
-
-      if (!match) {
-        throw new Error('รูปแบบรหัสลูกค้าไม่ถูกต้อง');
-      }
-
-      const [, year, numberStr] = match;
-      const lastNumber = parseInt(numberStr);
-
-      // ถ้าปีเปลี่ยน ให้เริ่มต้นเลขที่ใหม่
-      if (year !== currentYear) {
-        return { success: true, newCustomerId: `CV-${currentYear}-001` };
-      }
-
-      const newNumber = (lastNumber + 1).toString().padStart(3, '0');
-      return { success: true, newCustomerId: `CV-${currentYear}-${newNumber}` };
+      return { success: true, newCustomerId: 'CV-25-001' };
     } catch (error) {
       return { success: false, error: error.message };
     }
   }
 
+
   async createOrderVip(body: ICreateOrderVip) {
     try {
-      // ตรวจสอบว่า customer_id ไม่ซ้ำ
-      const existingCustomer = await this.customerRepository.findOne({
-        where: { customer_id: body.customer_id },
+      const fixedCustomerId = 'CV-25-001';
+
+      // ตรวจสอบว่ามีลูกค้ารหัสนี้แล้วหรือยัง
+      let existingCustomer = await this.customerRepository.findOne({
+        where: { customer_id: fixedCustomerId },
       });
 
-      if (existingCustomer) {
-        throw new Error('รหัสลูกค้าซ้ำ กรุณารีเฟรชหน้าและลองใหม่อีกครั้ง');
+      // ถ้าไม่มี ให้สร้างใหม่
+      if (!existingCustomer) {
+        const customer = new Customer();
+        customer.customer_id = fixedCustomerId;
+        // customer.name = body.customer_name;
+        // customer.telephone = body.telephone;
+        customer.latitude = body.latitude;
+        customer.longitude = body.longitude;
+        // customer.address = body.address;
+        customer.type_cus = 1;
+
+        existingCustomer = await this.customerRepository.save(customer);
+
+        if (!existingCustomer) {
+          throw new Error('ไม่สามารถสร้างลูกค้าใหม่ได้');
+        }
       }
 
-      const customer = new Customer();
-      customer.customer_id = body.customer_id;
-      customer.name = body.customer_name;
-      customer.telephone = body.telephone;
-      customer.latitude = body.latitude;
-      customer.longitude = body.longitude;
-      customer.address = body.address;
-      customer.type_cus = 1;
-
-      const savedCustomer = await this.customerRepository.save(customer);
-
-      if (!savedCustomer) {
-        throw new Error('Failed to save customer');
-      }
-
-      // สร้าง DropOffPoint เชื่อมกับ Customer
+      // สร้าง DropOffPoint โดยใช้ customer_id ที่ fix
       const dropOffPoint = new DropOffPoint();
       dropOffPoint.drop_status = 'inprogress';
       dropOffPoint.latitude = body.latitude;
@@ -349,14 +322,14 @@ export class WithdrawService {
       dropOffPoint.note = body.note;
       dropOffPoint.line_id = body.line_id;
       dropOffPoint.car_id = body.car_id;
-      dropOffPoint.customer_id = savedCustomer.customer_id;
+      dropOffPoint.customer_id = existingCustomer.customer_id;
 
       await this.dropOffPointRepository.save(dropOffPoint);
 
       return {
         success: true,
         message: 'Order VIP created successfully',
-        customer_code: savedCustomer.customer_id,
+        customer_code: existingCustomer.customer_id,
       };
     } catch (error) {
       console.error('Error in createOrderVip:', error);
@@ -365,6 +338,7 @@ export class WithdrawService {
       );
     }
   }
+
 
 
   async removeOrderVip(customer_id: string) {

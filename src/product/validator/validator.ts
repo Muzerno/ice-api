@@ -13,6 +13,7 @@ export interface ICreateProduct {
 }
 
 export interface IUpdateProduct {
+    ice_id?: string
     name?: string
     price?: number
     amount?: number

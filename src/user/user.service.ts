@@ -11,7 +11,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private UserRepository: Repository<User>,
-  ) {}
+  ) { }
 
   async createUser(body: ICreateUser) {
     try {
@@ -104,7 +104,7 @@ export class UserService {
       const user = await this.UserRepository.findOne({ where: { id: id } });
 
       return user;
-    } catch (error) {}
+    } catch (error) { }
   }
 
   async getUserByUsername(username: string) {
@@ -145,4 +145,6 @@ export class UserService {
       throw new Error(error.message);
     }
   }
+
+  
 }
