@@ -123,7 +123,7 @@ export class DashboardService {
         'car.car_id as car_id',
         'driver.firstname as firstname',
         'driver.lastname as lastname',
-        'money.status as status'
+        'ANY_VALUE(money.status) as status'
       ])
       .where(`money.date_time >= :startDay AND money.date_time <= :endDay`, {
         startDay: body.date_time + ' 00:00:00',
@@ -268,8 +268,8 @@ export class DashboardService {
       const Query = this.moneyRepository
         .createQueryBuilder('money')
         .leftJoin('money.line', 'line')
-        .leftJoin('line.dropOffPoints', 'dropoffpoint')
-        .leftJoin('dropoffpoint.delivery_details', 'delivery_details')
+        .innerJoin('line.dropOffPoints', 'dropoffpoint')
+        .innerJoin('dropoffpoint.delivery_details', 'delivery_details')
         .leftJoin('delivery_details.product', 'product')
         .leftJoin('dropoffpoint.customer', 'customer')
         .leftJoin('delivery_details.car', 'car')
@@ -292,10 +292,20 @@ export class DashboardService {
           startDay: `${body.date_from} 00:00:00`,
           endDay: `${body.date_to} 23:59:59`,
         });
+        Query.andWhere('dropoffpoint.date_drop BETWEEN :startDay AND :endDay', {
+          startDay: `${body.date_from} 00:00:00`,
+          endDay: `${body.date_to} 23:59:59`,
+        });
+        Query.andWhere('dropoffpoint.drop_status = :status', { 
+          status: 'success' 
+        });
       } else {
         Query.where('money.date_time BETWEEN :startDay AND :endDay', {
           startDay: `${body.date_from} 00:00:00`,
           endDay: `${body.date_to} 23:59:59`,
+        });
+        Query.andWhere('dropoffpoint.drop_status = :status', { 
+          status: 'success' 
         });
       }
 
