@@ -91,15 +91,21 @@ export class TransportationController {
     }
   }
 
+
   @Delete('car/:car_id')
   async deleteCar(@Param('car_id') car_id: number) {
     try {
       await this.transportationService.deleteCar(car_id);
       return { message: 'Car deleted successfully' };
     } catch (error) {
-      throw new Error(error.message);
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new BadRequestException(error.message || 'ลบไม่สำเร็จ');
     }
   }
+
 
   @Post('line/add-customers')
   async addCustomersToLine(

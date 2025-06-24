@@ -73,6 +73,7 @@ export class WithdrawController {
     return {
       success: true,
       newCustomerId: result.newCustomerId,
+      newCustomerName: result.newCustomerName
     };
   }
 
