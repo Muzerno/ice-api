@@ -14,6 +14,7 @@ import { Product } from 'src/entity/product.entity';
 import { Money } from 'src/entity/money.entity';
 import { NormalPoint } from 'src/entity/normal_point.entity';
 import { DataSource } from 'typeorm';
+import { BadRequestException } from '@nestjs/common';
 
 @Injectable()
 export class TransportationService {
@@ -149,13 +150,21 @@ export class TransportationService {
 
   async deleteCar(car_id: number) {
     try {
+      const usedInLine = await this.LineRepository.count({
+        where: { car_id },
+      });
+
+      if (usedInLine > 0) {
+        throw new BadRequestException('ไม่สามารถลบได้: รถถูกใช้งานในสายส่งแล้ว');
+      }
+
       await this.transportationRepository
         .createQueryBuilder('transportation_car')
         .delete()
-        .where({ car_id: car_id })
+        .where({ car_id })
         .execute();
     } catch (error) {
-      throw new Error(error.message);
+      throw new BadRequestException(error.message || 'ลบไม่สำเร็จ');
     }
   }
 
@@ -283,7 +292,7 @@ export class TransportationService {
       let normalPoints = [];
       if (lineIds.length > 0) {
         normalPoints = await this.dataSource
-          .getRepository('normal_point') // ถ้ามี entity ก็ใช้ชื่อ entity
+          .getRepository('normal_point')
           .createQueryBuilder('n')
           .leftJoinAndSelect('n.customer', 'customer')
           .where('n.line_id IN (:...lineIds)', { lineIds })
@@ -291,12 +300,10 @@ export class TransportationService {
           .getMany();
       }
 
-      // ✅ map line_id → step
       const lineStepMap = new Map(
         normalPoints.map((np: any) => [np.line_id, np.step])
       );
 
-      // ✅ sort dropDaily และ dropOrder ตาม step ของ line_id
       const sortByLineStep = (a: any, b: any) =>
         (lineStepMap.get(a.line_id) || 0) - (lineStepMap.get(b.line_id) || 0);
 

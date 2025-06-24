@@ -277,9 +277,9 @@ export class WithdrawService {
     await this.withdrawRepository.delete(id);
   }
 
-  async generateNewCustomerId(): Promise<{ success: boolean; newCustomerId?: string; error?: string }> {
+  async generateNewCustomerId(): Promise<{ success: boolean; newCustomerId?: string; newCustomerName?: string; error?: string }> {
     try {
-      return { success: true, newCustomerId: 'CV-25-001' };
+      return { success: true, newCustomerId: 'CV-25-001', newCustomerName: 'ลูกค้าพิเศษ' };
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -338,8 +338,6 @@ export class WithdrawService {
       );
     }
   }
-
-
 
   async removeOrderVip(customer_id: string) {
     await this.dropOffPointRepository.delete({ customer_id });
